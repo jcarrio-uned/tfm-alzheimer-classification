@@ -1,0 +1,139 @@
+// Copyright (C) 2023-2025 Analog Devices, Inc. All Rights Reserved.
+// This software is proprietary and confidential to Analog Devices, Inc. and its licensors.
+{
+    "folders": [
+        {
+            "path": "../."
+        }
+    ],
+    "settings": {
+        // General settings
+        "terminal.integrated.scrollback": 100000,
+        "terminal.integrated.enableMultiLinePasteWarning": "never",
+        "terminal.integrated.shellIntegration.enabled": true,
+        "terminal.integrated.suggest.enabled": true,
+        // Formatting
+        "editor.formatOnSave": true,
+        "editor.rulers": [
+            120
+        ],
+        "editor.guides.bracketPairs": true,
+        "files.eol": "\n",
+        "files.encoding": "utf8",
+        "files.autoGuessEncoding": true,
+        "files.trimTrailingWhitespace": true,
+        "cSpell.autoFormatConfigFile": true,
+        "yaml.format.printWidth": 120,
+        // Git
+        "gitlens.advanced.repositorySearchDepth": 10,
+        "git.repositoryScanMaxDepth": 10,
+        "git.branchProtectionPrompt": "alwaysCommit",
+        "git-graph.dialog.fetchRemote.prune": true,
+        "git-graph.dialog.fetchRemote.pruneTags": true,
+        "git-graph.repository.fetchAndPrune": true,
+        "git-graph.repository.fetchAndPruneTags": true,
+        "git-graph.dialog.addTag.type": "Lightweight",
+        // Python
+        "python.terminal.activateEnvironment": false,
+        "python.terminal.shellIntegration.enabled": true,
+        "python.analysis.supportAllPythonDocuments": true,
+        "ruff.enable": true,
+        "ruff.organizeImports": true,
+        "[python]": {
+            "editor.defaultFormatter": "charliermarsh.ruff",
+        },
+        // FW
+        "C_Cpp.default.compileCommands": "/work/sdk/_build/compile_commands.json",
+        "[c]": {
+            "editor.defaultFormatter": "xaver.clang-format"
+        },
+        "[cpp]": {
+            "editor.defaultFormatter": "xaver.clang-format"
+        },
+        "cmakeFormat.exePath": "/home/ubuntu/.local/bin/cmake-format",
+        "cmakeFormat.args": [
+            "--config-file",
+            "/work/sdk/adi-tools/mp-fw-config/format/.cmake-format"
+        ],
+        "clang-format.executable": "/home/ubuntu/.local/bin/clang-format",
+        "clang-format.style": "file:/work/sdk/adi-tools/mp-fw-config/format/.clang-format",
+        "clang-tidy.executable": "/home/ubuntu/.local/bin/clang-tidy",
+        "clang-tidy.buildPath": "/work/sdk/_build/",
+        "clang-tidy.lintOnSave": true,
+        // Groovy
+        "groovyLint.enable": true,
+        "groovyLint.fix.enable": true,
+        "groovyLint.format.enable": true,
+        "groovyLint.format.useDocumentIndentSize": true,
+        "groovyLint.basic.verbose": true,
+        // Shell
+        "shellcheck.enable": true,
+        "shellcheck.enableQuickFix": true,
+        "shellcheck.run": "onType",
+        "shellformat.flag": "-i 4",
+        // Misc
+        "[dockerfile]": {
+            "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+        },
+        "files.associations": {
+            "*.svg": "html",
+            ".env": "ini"
+        },
+        "todo-tree.general.tags": [
+            "BUG",
+            "HACK",
+            "FIXME",
+            "TODO",
+            "XXX",
+            "[ ]",
+            "[x]",
+            "INFO"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode-remote.remote-containers",
+            "github.remotehub",
+            "ms-vscode-remote.remote-ssh",
+            "ms-vscode-remote.remote-ssh-edit",
+            "ms-vscode.remote-server",
+            "ms-vscode.remote-explorer",
+            "ms-vscode.remote-repositories",
+            "ms-vscode-remote.remote-wsl",
+            "ms-vscode.live-server",
+            "ms-azuretools.vscode-containers",
+            "docker.docker",
+            "streetsidesoftware.code-spell-checker",
+            "ryu1kn.partial-diff",
+            "mhutchie.git-graph",
+            "eamodio.gitlens",
+            "gruntfuggly.todo-tree",
+            "christian-kohler.path-intellisense",
+            "gurumukhi.selected-lines-count",
+            "shardulm94.trailing-spaces",
+            "kisstkondoros.vscode-gutter-preview",
+            "hediet.vscode-drawio",
+            "mermaidchart.vscode-mermaid-chart",
+            "bierner.markdown-mermaid",
+            "github.copilot",
+            "github.vscode-pull-request-github",
+            "github.vscode-github-actions",
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "njqdev.vscode-python-typehint",
+            "ms-python.vscode-python-envs",
+            "visualstudioexptteam.intellicode-api-usage-examples",
+            "charliermarsh.ruff",
+            "ms-toolsai.jupyter",
+            "wholroyd.jinja",
+            "peterj.proto",
+            "tamasfe.even-better-toml",
+            "redhat.vscode-yaml",
+            "rioj7.command-variable",
+            "augustocdias.tasks-shell-input",
+            "marus25.cortex-debug",
+            "timonwong.shellcheck",
+            "foxundermoon.shell-format"
+        ]
+    }
+}
