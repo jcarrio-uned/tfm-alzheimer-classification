@@ -4,6 +4,13 @@ dynamic = ["version"]
 description = "A Python project for Alzheimer's disease classification using machine learning techniques."
 authors = [{ name = "Joan Carrio Miñana", email = "jcarrio12@alumno.uned.es" }]
 requires-python = ">=3.12,<4.0"
+dependencies = [
+    "numpy>=2.0",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+    "scikit-learn>=1.4",
+    "torch>=2.0",
+]
 
 [project.urls]
 repository = "https://github.com/jcarrio-uned/tfm-alzheimer-classification"
@@ -26,12 +33,15 @@ lint.select = ["ALL"]
 lint.ignore = [
     "COM812", # COM812: missing-trailing-comma
     "D203",   # D203: one-blank-line-before-class
-    "D212",   # D212: Multi-line docstring summary should start at the first line
+    "D213",   # D213: Multi-line docstring summary should start at the second line
     "EM102",  # EM102: f-string-in-exception
     "FBT001", # FBT001: boolean-type-hint-positional-argument
     "FBT002", # FBT002: boolean-default-value-positional-argument
     "G004",   # G004: logging-f-string
     "ISC001", # ISC001: single-line-implicit-string-concatenation
+    "PD011",  # PD011: false positive on torch .values attribute
+    "TCH003", # TCH003: allow stdlib imports outside TYPE_CHECKING
+    "T201",   # T201: allow print in CLI entry points
 ]
 
 [tool.poetry-dynamic-versioning]

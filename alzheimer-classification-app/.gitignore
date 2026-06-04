@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.ruff_cache/
+.pytest_cache/
+
+# Data (opcional - comentar si quieres incluir datos en el repo)
+# data/*.xlsx
+# data/*.csv
+
+# Temporary files
+*.tmp
+*.bak
+.~*
+
+# OS
+Thumbs.db
+.DS_Store
