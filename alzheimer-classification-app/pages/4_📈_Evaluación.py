@@ -1,55 +1,49 @@
-"""
-Módulo 4: Evaluación y Resultados
-==================================
+"""Módulo 4: Evaluación y Resultados.
+
 Entrenamiento, evaluación y visualización de resultados del modelo.
 """
 
-import streamlit as st
-import pandas as pd
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import plotly.express as px
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
+import streamlit as st
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    average_precision_score,
+    balanced_accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
+)
 from sklearn.model_selection import (
+    GridSearchCV,
     RepeatedStratifiedKFold,
     StratifiedKFold,
     StratifiedShuffleSplit,
     cross_validate,
     train_test_split,
-    GridSearchCV,
 )
-from sklearn.metrics import (
-    balanced_accuracy_score,
-    roc_auc_score,
-    average_precision_score,
-    roc_curve,
-    precision_recall_curve,
-    confusion_matrix,
-    classification_report,
-    precision_score,
-    recall_score,
-    f1_score,
-)
-import sys
-import os
-from datetime import datetime
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    get_metabolite_columns,
-    get_feature_stats,
-    format_metric_with_ci,
-    initialize_session_state,
-    apply_winsorization,
     WinsorizerTransformer,
+    get_metabolite_columns,
+    initialize_session_state,
+    load_data,
 )
 
 # ============================================================================
@@ -206,15 +200,13 @@ def create_model(config, use_grid_search=False):
         model = RandomForestClassifier(**params)
 
     # Crear pipeline: Winsorización (train-only bounds) → Scaler → Clasificador
-    pipeline = Pipeline(
+    return Pipeline(
         [
             ("winsorizer", WinsorizerTransformer(percentile=0.05)),
             ("scaler", StandardScaler()),
             ("classifier", model),
         ]
     )
-
-    return pipeline
 
 
 # ============================================================================
@@ -334,12 +326,11 @@ with col2:
         st.success("✓ Modelo entrenado")
 
 with col3:
-    if "cv_results" in st.session_state:
-        if st.button("🗑️ Limpiar resultados"):
-            for key in ["cv_results", "trained_pipeline", "model_trained", "predictions", "probabilities"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.rerun()
+    if "cv_results" in st.session_state and st.button("🗑️ Limpiar resultados"):
+        for key in ["cv_results", "trained_pipeline", "model_trained", "predictions", "probabilities"]:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.rerun()
 
 # Ejecutar entrenamiento
 if train_button:
@@ -662,7 +653,7 @@ if train_button:
 
             fold_counter = 0
 
-            for train_idx, test_idx in cv.split(X_train_full, y_train_full):
+            for fold_counter, (train_idx, test_idx) in enumerate(cv.split(X_train_full, y_train_full)):
                 X_train, X_test = X_train_full[train_idx], X_train_full[test_idx]
                 y_train, y_test = y_train_full[train_idx], y_train_full[test_idx]
 
@@ -691,8 +682,7 @@ if train_button:
                 fold_roc_curves.append((fpr, tpr))
                 fold_pr_curves.append((precision, recall))
 
-                fold_counter += 1
-                progress_bar.progress(0.7 + 0.3 * (fold_counter / total_folds))
+                progress_bar.progress(0.7 + 0.3 * ((fold_counter + 1) / total_folds))
 
             # Promediar predicciones de repeticiones de CV
             cv_predictions = cv_predictions / cv_prediction_counts
@@ -767,7 +757,7 @@ if train_button:
             }
 
             # Timestamp
-            st.session_state["training_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.session_state["training_timestamp"] = datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S")
 
             st.rerun()
 
@@ -867,7 +857,9 @@ else:
         "recall": ("Sensitivity", "🔍"),
     }
 
-    for i, (col, (metric_key, (label, icon))) in enumerate(zip([col1, col2, col3, col4], metrics_data.items())):
+    for _i, (col, (metric_key, (label, icon))) in enumerate(
+        zip([col1, col2, col3, col4], metrics_data.items(), strict=False)
+    ):
         with col:
             scores = cv_results[f"test_{metric_key}"]
             mean_score = scores.mean()
@@ -1060,9 +1052,9 @@ if "grid_search_results" in st.session_state:
                     y=grid_df["Mean BA"],
                     mode="lines+markers",
                     name="BA",
-                    error_y=dict(type="data", array=grid_df["Std BA"], visible=True),
-                    marker=dict(size=10, color="steelblue"),
-                    line=dict(color="steelblue", width=2),
+                    error_y={"type": "data", "array": grid_df["Std BA"], "visible": True},
+                    marker={"size": 10, "color": "steelblue"},
+                    line={"color": "steelblue", "width": 2},
                 )
             )
 
@@ -1075,7 +1067,7 @@ if "grid_search_results" in st.session_state:
                         y=[grid_df[best_idx]["Mean BA"].values[0]],
                         mode="markers",
                         name="Mejor C",
-                        marker=dict(size=15, color="red", symbol="star"),
+                        marker={"size": 15, "color": "red", "symbol": "star"},
                     )
                 )
 
@@ -1132,7 +1124,7 @@ if "trained_pipeline" in st.session_state:
                 x=coef_df["Coeficiente"],
                 y=coef_df["Variable"],
                 orientation="h",
-                marker=dict(color=colors),
+                marker={"color": colors},
                 text=coef_df["Coeficiente"].apply(lambda x: f"{x:.3f}"),
                 textposition="outside",
             )
@@ -1259,7 +1251,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                     x=fpr,
                     y=tpr,
                     mode="lines",
-                    line=dict(color="lightblue", width=1),
+                    line={"color": "lightblue", "width": 1},
                     opacity=0.2,
                     showlegend=False,
                     hoverinfo="skip",
@@ -1277,7 +1269,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                 x=mean_fpr,
                 y=mean_tpr,
                 mode="lines",
-                line=dict(color="darkblue", width=3),
+                line={"color": "darkblue", "width": 3},
                 name=f"Mean ROC (AUC={mean_auc:.3f}±{std_auc:.3f})",
             )
         )
@@ -1288,7 +1280,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                 x=[0, 1],
                 y=[0, 1],
                 mode="lines",
-                line=dict(color="gray", width=2, dash="dash"),
+                line={"color": "gray", "width": 2, "dash": "dash"},
                 name="Random (AUC=0.500)",
             )
         )
@@ -1299,7 +1291,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
             yaxis_title="True Positive Rate (Sensitivity)",
             width=700,
             height=600,
-            legend=dict(x=0.6, y=0.1),
+            legend={"x": 0.6, "y": 0.1},
         )
 
         st.plotly_chart(fig, width="stretch")
@@ -1324,7 +1316,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                     x=recall,
                     y=precision,
                     mode="lines",
-                    line=dict(color="lightcoral", width=1),
+                    line={"color": "lightcoral", "width": 1},
                     opacity=0.2,
                     showlegend=False,
                     hoverinfo="skip",
@@ -1345,7 +1337,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                 x=mean_recall,
                 y=mean_precision,
                 mode="lines",
-                line=dict(color="darkred", width=3),
+                line={"color": "darkred", "width": 3},
                 name=f"Mean PR (AP={mean_ap:.3f}±{std_ap:.3f})",
             )
         )
@@ -1357,7 +1349,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
                 x=[0, 1],
                 y=[prevalence, prevalence],
                 mode="lines",
-                line=dict(color="gray", width=2, dash="dash"),
+                line={"color": "gray", "width": 2, "dash": "dash"},
                 name=f"Baseline (prevalencia={prevalence:.3f})",
             )
         )
@@ -1368,7 +1360,7 @@ if evaluation_method == "cv" and len(fold_roc_curves) > 0:
             yaxis_title="Precision",
             width=700,
             height=600,
-            legend=dict(x=0.6, y=0.9),
+            legend={"x": 0.6, "y": 0.9},
         )
 
         st.plotly_chart(fig, width="stretch")
@@ -1420,7 +1412,7 @@ fig = go.Figure(
         textfont={"size": 16},
         colorscale="Blues",
         showscale=True,
-        colorbar=dict(title="Count"),
+        colorbar={"title": "Count"},
     )
 )
 
@@ -1531,7 +1523,7 @@ if model_config["model_type"] in ["Logistic Regression", "Random Forest"]:
             x=importance_df[importance_label],
             y=importance_df["Variable"],
             orientation="h",
-            marker=dict(color=importance_df[importance_label], colorscale="Viridis", showscale=True),
+            marker={"color": importance_df[importance_label], "colorscale": "Viridis", "showscale": True},
         )
     )
 

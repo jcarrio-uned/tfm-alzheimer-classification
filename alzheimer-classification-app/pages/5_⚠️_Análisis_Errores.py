@@ -1,28 +1,26 @@
-"""
-Módulo 5: Análisis de Errores
-==============================
+"""Módulo 5: Análisis de Errores.
+
 Análisis detallado de falsos positivos y falsos negativos con alertas metabólicas.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import sys
-import os
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    get_metabolite_columns,
-    get_feature_stats,
-    check_atypical_markers,
     calculate_effect_size,
+    check_atypical_markers,
+    get_metabolite_columns,
     initialize_session_state,
+    load_data,
 )
 
 # ============================================================================
@@ -179,7 +177,7 @@ prob_df = pd.DataFrame(
         "P(AD)": y_proba,
         "Categoría": [
             "True Positive" if tp else "True Negative" if tn else "False Negative" if fn else "False Positive"
-            for tp, tn, fn, fp in zip(tp_mask, tn_mask, fn_mask, fp_mask)
+            for tp, tn, fn, fp in zip(tp_mask, tn_mask, fn_mask, fp_mask, strict=False)
         ],
     }
 )

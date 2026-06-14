@@ -10,6 +10,11 @@ dependencies = [
     "pandas>=2.0",
     "scikit-learn>=1.4",
     "torch>=2.0",
+    "statsmodels==0.14.6",
+    "streamlit>=1.30.0",
+    "plotly>=5.18.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.12.0",
 ]
 
 [project.urls]
@@ -31,17 +36,33 @@ ruff = "0.12.3"
 line-length = 120
 lint.select = ["ALL"]
 lint.ignore = [
+    "ANN",    # ANN: type annotations not enforced in research/ML code
+    "BLE001", # BLE001: blind exception (needed in Streamlit error handling)
+    "C901",   # C901: function too complex (ML pipelines are inherently complex)
     "COM812", # COM812: missing-trailing-comma
     "D203",   # D203: one-blank-line-before-class
     "D213",   # D213: Multi-line docstring summary should start at the second line
     "EM102",  # EM102: f-string-in-exception
+    "E501",   # E501: line too long (formatter handles code; remaining are strings/diagrams)
+    "ERA001", # ERA001: commented-out code (kept for reference in research)
     "FBT001", # FBT001: boolean-type-hint-positional-argument
     "FBT002", # FBT002: boolean-default-value-positional-argument
     "G004",   # G004: logging-f-string
+    "INP001", # INP001: implicit namespace (Streamlit pages don't need __init__.py)
     "ISC001", # ISC001: single-line-implicit-string-concatenation
+    "N802",   # N802: function name should be lowercase (ML convention: X, C)
+    "N803",   # N803: argument name should be lowercase (ML convention)
+    "N806",   # N806: variable should be lowercase (ML convention: X, P_s1, etc.)
     "PD011",  # PD011: false positive on torch .values attribute
+    "PLR0911",# PLR0911: too many return statements
+    "PLR0912",# PLR0912: too many branches
+    "PLR2004",# PLR2004: magic value in comparison (hyperparameters, thresholds)
+    "RUF001", # RUF001: ambiguous unicode (Spanish text with accents)
+    "RUF002", # RUF002: ambiguous unicode in docstring
+    "RUF003", # RUF003: ambiguous unicode in comment
     "TCH003", # TCH003: allow stdlib imports outside TYPE_CHECKING
     "T201",   # T201: allow print in CLI entry points
+    "TRY003", # TRY003: long exception messages
 ]
 
 [tool.poetry-dynamic-versioning]

@@ -1,33 +1,29 @@
-"""
-Módulo 6: Predicción Individual
-================================
+"""Módulo 6: Predicción Individual.
+
 Predicción para nuevos pacientes con sistema de alertas metabólicas.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import sys
-import os
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    get_metabolite_columns,
-    get_feature_stats,
-    check_atypical_markers,
     calculate_effect_size,
-    get_bio_e_features,
-    get_minimal7_features,
-    get_engineered_features,
-    get_base_features_needed,
-    compute_engineered_feature,
+    check_atypical_markers,
     compute_confidence_assessment,
+    compute_engineered_feature,
+    get_base_features_needed,
+    get_engineered_features,
+    get_metabolite_columns,
     initialize_session_state,
+    load_data,
 )
 
 # ============================================================================
@@ -271,7 +267,7 @@ elif input_method == "Cargar desde archivo CSV":
 
     # Ejemplo de formato (solo features base)
     with st.expander("Ver formato de ejemplo"):
-        example_df = pd.DataFrame([{feat: 0.0 for feat in base_features_needed}])
+        example_df = pd.DataFrame([dict.fromkeys(base_features_needed, 0.0)])
         st.dataframe(example_df)
 
         csv_example = example_df.to_csv(index=False)
@@ -467,7 +463,7 @@ if len(new_sample_values) == len(selected_features):
                 x=[proba],
                 y=["Predicción"],
                 mode="markers+text",
-                marker=dict(size=20, color=marker_color, line=dict(color="black", width=2)),
+                marker={"size": 20, "color": marker_color, "line": {"color": "black", "width": 2}},
                 text=f"P(AD)={proba:.3f}",
                 textposition="top center",
                 showlegend=False,
@@ -476,10 +472,10 @@ if len(new_sample_values) == len(selected_features):
 
         fig.update_layout(
             title="Posición de la muestra en el espacio de decisión",
-            xaxis=dict(title="P(AD)", range=[0, 1], dtick=0.1),
-            yaxis=dict(showticklabels=False),
+            xaxis={"title": "P(AD)", "range": [0, 1], "dtick": 0.1},
+            yaxis={"showticklabels": False},
             height=220,
-            margin=dict(t=60, b=40),
+            margin={"t": 60, "b": 40},
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -563,9 +559,10 @@ if len(new_sample_values) == len(selected_features):
                             go.Bar(
                                 x=["AD (típico)", "NC (típico)", "Paciente"],
                                 y=[alert["ad_mean"], alert["nc_mean"], alert["valor"]],
-                                marker=dict(
-                                    color=["lightgreen", "lightblue", "red"], line=dict(color="black", width=1)
-                                ),
+                                marker={
+                                    "color": ["lightgreen", "lightblue", "red"],
+                                    "line": {"color": "black", "width": 1},
+                                },
                                 showlegend=False,
                             )
                         )
@@ -575,16 +572,16 @@ if len(new_sample_values) == len(selected_features):
                             go.Scatter(
                                 x=["AD (típico)", "NC (típico)"],
                                 y=[alert["ad_mean"], alert["nc_mean"]],
-                                error_y=dict(
-                                    type="data",
-                                    array=[
+                                error_y={
+                                    "type": "data",
+                                    "array": [
                                         reference_stats.loc[alert["metabolito"], "ad_std"],
                                         reference_stats.loc[alert["metabolito"], "nc_std"],
                                     ],
-                                    visible=True,
-                                ),
+                                    "visible": True,
+                                },
                                 mode="markers",
-                                marker=dict(size=0.1, color="black"),
+                                marker={"size": 0.1, "color": "black"},
                                 showlegend=False,
                             )
                         )
@@ -669,16 +666,15 @@ if len(new_sample_values) == len(selected_features):
                 - Realizar seguimiento periódico
                 - Evaluación cognitiva detallada recomendada
                 """)
-        else:  # NC
-            if proba < 0.2:
-                st.success("""
+        elif proba < 0.2:
+            st.success("""
                 🟢 **RIESGO BAJO**
                 - Probabilidad muy baja de Alzheimer con alta confianza
                 - Perfil metabólico normal
                 - Seguimiento rutinario
                 """)
-            elif proba < 0.35:
-                st.info("""
+        elif proba < 0.35:
+            st.info("""
                 🟡 **RIESGO LEVE**
                 - Probabilidad baja pero con margen moderado
                 - Considerar seguimiento preventivo

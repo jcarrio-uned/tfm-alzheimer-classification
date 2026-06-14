@@ -1,18 +1,16 @@
-"""
-Módulo 2: Selección de Variables.
+"""Módulo 2: Selección de Variables.
 
 Pipeline completo de selección: L1 Stability → Forward → Engineering → Cleanup.
 Reproduce exactamente la metodología del TFM que obtiene 7 metabolitos + 4 ingenieriles = 11 features.
 """
 
-import os
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from plotly.subplots import make_subplots
 from scipy import stats
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score
@@ -21,13 +19,13 @@ from sklearn.preprocessing import StandardScaler
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    calculate_effect_size,
+    ORIGINAL_METABS,
     apply_winsorization,
     initialize_session_state,
+    load_data,
 )
 
 # ============================================================================
@@ -59,29 +57,7 @@ Resultado: **7 metabolitos base + 4 features ingenieriles = 11 features**.
 
 with st.spinner("Cargando datos..."):
     df = load_data()
-    _ORIGINAL_METABS = [
-        "C10:2",
-        "Arg",
-        "DOPA",
-        "GCDCA",
-        "Spermidine",
-        "HipAcid",
-        "Cer(d18:1/20:0)",
-        "CE(22:5)",
-        "DG(16:0_18:2)",
-        "Cer(d18:0/24:1)",
-        "FA(18:2)",
-        "lysoPC.a.C18:2",
-        "PC.aa.C40:4",
-        "Hex2Cer(d18:1/20:0)",
-        "Hex3Cer(d18:1/24:1)",
-        "HexCer(d18:1/26:1)",
-        "DHEAS",
-        "Ind-SO4",
-        "SM.(OH).C24:1",
-        "TG(18:2_38:5)",
-    ]
-    metabolites = [m for m in _ORIGINAL_METABS if m in df.columns]
+    metabolites = [m for m in ORIGINAL_METABS if m in df.columns]
 
 y = (df["Group"] == "AD").astype(int).values
 
@@ -207,7 +183,7 @@ if st.button("▶️ Ejecutar Pipeline Completo", type="primary"):
     sss_stab = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=42)
 
     selection_counts = np.zeros(len(metabolites))
-    for split_i, (train_idx, test_idx) in enumerate(sss_stab.split(X_all, y)):
+    for split_i, (train_idx, _test_idx) in enumerate(sss_stab.split(X_all, y)):
         if split_i % 40 == 0:
             progress.progress(
                 int(5 + 20 * split_i / n_splits),
@@ -235,7 +211,7 @@ if st.button("▶️ Ejecutar Pipeline Completo", type="primary"):
 
     # Tabla de frecuencias
     stab_results = []
-    for feat, freq in zip(metabolites, selection_freq):
+    for feat, freq in zip(metabolites, selection_freq, strict=False):
         stab_results.append(
             {
                 "Variable": feat,
@@ -262,9 +238,9 @@ if st.button("▶️ Ejecutar Pipeline Completo", type="primary"):
                 x=stab_df["Frecuencia (%)"],
                 y=stab_df["Variable"],
                 orientation="h",
-                marker=dict(
-                    color=["#27ae60" if f >= stability_threshold else "#bdc3c7" for f in stab_df["Frecuencia (%)"]]
-                ),
+                marker={
+                    "color": ["#27ae60" if f >= stability_threshold else "#bdc3c7" for f in stab_df["Frecuencia (%)"]]
+                },
             )
         )
         fig_stab.add_vline(
@@ -319,7 +295,7 @@ if st.button("▶️ Ejecutar Pipeline Completo", type="primary"):
         best_ba_tr = 0
 
         for feat in remaining:
-            test_set = selected + [feat]
+            test_set = [*selected, feat]
             X_test_arr = get_feature_matrix(test_set, df, {})
             ba_f, std_f, ba_tr_f = evaluate_feature_set(X_test_arr, y, C_eval, n_splits)
             if ba_f > best_ba + delta_forward:
@@ -588,7 +564,7 @@ if st.button("▶️ Ejecutar Pipeline Completo", type="primary"):
             x=imp_df["ΔBA"],
             y=imp_df["Feature"],
             orientation="h",
-            marker=dict(color=["#e74c3c" if t == "Metabolito" else "#3498db" for t in imp_df["Tipo"]]),
+            marker={"color": ["#e74c3c" if t == "Metabolito" else "#3498db" for t in imp_df["Tipo"]]},
         )
     )
     fig_imp.update_layout(
@@ -632,7 +608,7 @@ Se muestra **AUC univariante**, **correlación con la variable objetivo** y **VI
 _ALL_SELECTABLE = metabolites + [
     c
     for c in df.columns
-    if c not in metabolites + ["ID", "Group", "Sample", "Age [y]", "Sex", "Fasting time [h]"]
+    if c not in [*metabolites, "ID", "Group", "Sample", "Age [y]", "Sex", "Fasting time [h]"]
     and pd.api.types.is_numeric_dtype(df[c])
 ]
 

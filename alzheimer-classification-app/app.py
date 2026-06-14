@@ -1,5 +1,5 @@
-"""
-Herramienta Web Interactiva para Análisis de Clasificación AD/NC
+"""Herramienta Web Interactiva para Análisis de Clasificación AD/NC.
+
 =================================================================
 
 Aplicación Streamlit para análisis completo del pipeline de clasificación
@@ -10,8 +10,7 @@ Fecha: 2026
 """
 
 import streamlit as st
-import pandas as pd
-from app_utils import load_data, initialize_session_state
+from app_utils import ORIGINAL_METABS, initialize_session_state, load_data
 
 # Configuración de página
 st.set_page_config(page_title="AD Classification Tool", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
@@ -36,6 +35,7 @@ clasificación de Alzheimer (AD) vs Normal (NC) usando datos metabolómicos.
 
 # Cargar datos para mostrar estadísticas
 df = load_data()
+n_metab = sum(1 for m in ORIGINAL_METABS if m in df.columns)
 
 col1, col2, col3 = st.columns(3)
 
@@ -45,10 +45,21 @@ with col1:
     )
 
 with col2:
-    st.metric("Metabolitos", "20 variables", "datos residuales")
+    st.metric("Metabolitos", f"{n_metab} variables", "datos residuales")
 
 with col3:
-    st.metric("Performance", "84.5%", "Balanced Accuracy (CV)")
+    # Mostrar BA del modelo entrenado si existe, si no mostrar placeholder
+    if "cv_results" in st.session_state:
+        ba_val = st.session_state["cv_results"].get("test_balanced_accuracy", None)
+        if ba_val is not None:
+            import numpy as np
+
+            ba_mean = np.mean(ba_val)
+            st.metric("Performance", f"{ba_mean * 100:.1f}%", "Balanced Accuracy (CV)")
+        else:
+            st.metric("Performance", "—", "Entrenar modelo en Evaluación")
+    else:
+        st.metric("Performance", "—", "Entrenar modelo en Evaluación")
 
 st.markdown("---")
 
@@ -107,8 +118,8 @@ Proceso completo y documentado de selección de modelo y variables del TFM.
 Sistema de triaje en cascada: metabolómica + reglas clínicas.
 - Optimización del hiperparámetro C
 - Sistema de tres zonas (verde/amarilla/roja) con umbrales optimizados
-- Cascada con 4 reglas clínicas (APOE, depresión, HTA/colesterol)
-- Métricas globales: Sensibilidad=0.978, NPV=0.933, solo 2 AD perdidos
+- Cascada con reglas clínicas (APOE, depresión, etc.)
+- Métricas globales de clasificación
 - Simulador interactivo de triaje
 """)
 

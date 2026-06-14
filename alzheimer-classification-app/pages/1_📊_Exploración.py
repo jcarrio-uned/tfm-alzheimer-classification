@@ -1,32 +1,28 @@
-"""
-Módulo 1: Exploración de Datos
-================================
+"""Módulo 1: Exploración de Datos.
+
 Visualización y análisis exploratorio del dataset de metabolómica.
 """
 
-import streamlit as st
-import pandas as pd
+import sys
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import seaborn as sns
-import matplotlib.pyplot as plt
+import streamlit as st
+from scipy import stats
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from scipy import stats
-import sys
-import os
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    get_metabolite_columns,
+    ORIGINAL_METABS,
     calculate_effect_size,
-    get_feature_stats,
     initialize_session_state,
+    load_data,
 )
 
 # ============================================================================
@@ -54,29 +50,7 @@ Este módulo permite entender las distribuciones, relaciones y estructura de los
 with st.spinner("Cargando datos..."):
     df = load_data()
     # Solo metabolitos originales (sin engineered features)
-    _ORIGINAL_METABS = [
-        "C10:2",
-        "Arg",
-        "DOPA",
-        "GCDCA",
-        "Spermidine",
-        "HipAcid",
-        "Cer(d18:1/20:0)",
-        "CE(22:5)",
-        "DG(16:0_18:2)",
-        "Cer(d18:0/24:1)",
-        "FA(18:2)",
-        "lysoPC.a.C18:2",
-        "PC.aa.C40:4",
-        "Hex2Cer(d18:1/20:0)",
-        "Hex3Cer(d18:1/24:1)",
-        "HexCer(d18:1/26:1)",
-        "DHEAS",
-        "Ind-SO4",
-        "SM.(OH).C24:1",
-        "TG(18:2_38:5)",
-    ]
-    metabolites = [m for m in _ORIGINAL_METABS if m in df.columns]
+    metabolites = [m for m in ORIGINAL_METABS if m in df.columns]
 
 # Almacenar en session state si no existe
 if "data" not in st.session_state:
@@ -283,7 +257,7 @@ fig = go.Figure(
         text=np.round(corr_matrix.values, 2),
         texttemplate="%{text}",
         textfont={"size": 8},
-        colorbar=dict(title="Correlación"),
+        colorbar={"title": "Correlación"},
     )
 )
 
@@ -353,7 +327,7 @@ fig.add_trace(
         y=np.cumsum(pca.explained_variance_ratio_) * 100,
         name="Acumulada",
         mode="lines+markers",
-        marker=dict(size=10, color="red"),
+        marker={"size": 10, "color": "red"},
         yaxis="y2",
     )
 )
@@ -362,7 +336,7 @@ fig.update_layout(
     title="Varianza Explicada por Componente",
     xaxis_title="Componente",
     yaxis_title="Varianza Explicada (%)",
-    yaxis2=dict(title="Varianza Acumulada (%)", overlaying="y", side="right"),
+    yaxis2={"title": "Varianza Acumulada (%)", "overlaying": "y", "side": "right"},
     height=400,
 )
 
@@ -455,7 +429,7 @@ if len(outliers_df) > 0:
 
     fig = go.Figure(
         data=go.Heatmap(
-            z=z_scores_outliers, x=metabolites, y=outliers_df.index, colorscale="Reds", colorbar=dict(title="Z-score")
+            z=z_scores_outliers, x=metabolites, y=outliers_df.index, colorscale="Reds", colorbar={"title": "Z-score"}
         )
     )
 
@@ -469,6 +443,152 @@ if len(outliers_df) > 0:
     st.plotly_chart(fig, width="stretch")
 else:
     st.success("✓ No se detectaron outliers con el umbral seleccionado")
+
+# ============================================================================
+# Sección 6: Detección de Outliers — 3×IQR (Multivariante)
+# ============================================================================
+
+st.header("6️⃣ Detección de Outliers — Método IQR")
+
+st.markdown("""
+Método robusto basado en el **rango intercuartílico (IQR)**.
+Un valor es outlier si cae fuera del intervalo $[Q_1 - k \\times IQR,\\ Q_3 + k \\times IQR]$.
+
+Este método es **no paramétrico** (no asume normalidad) y resistente a los propios outliers.
+""")
+
+col_iqr1, col_iqr2 = st.columns(2)
+with col_iqr1:
+    iqr_k = st.slider(
+        "Factor k (multiplicador IQR)", 1.5, 4.0, 3.0, 0.5, help="1.5 = estándar Tukey, 3.0 = conservador"
+    )
+with col_iqr2:
+    min_metab_outlier = st.number_input(
+        "Mín. metabolitos fuera de rango para marcar muestra",
+        min_value=1,
+        max_value=5,
+        value=1,
+        help="Cuántos metabolitos deben ser extremos para considerar la muestra como outlier.",
+    )
+
+# Calcular IQR por metabolito
+X_metab = df_filtered[metabolites].values
+Q1 = np.percentile(X_metab, 25, axis=0)
+Q3 = np.percentile(X_metab, 75, axis=0)
+IQR = Q3 - Q1
+lower_bound = Q1 - iqr_k * IQR
+upper_bound = Q3 + iqr_k * IQR
+
+# Matriz booleana: True si fuera de rango
+outside_iqr = (X_metab < lower_bound) | (X_metab > upper_bound)
+n_metab_outlier_per_sample = outside_iqr.sum(axis=1)
+iqr_outlier_mask = n_metab_outlier_per_sample >= min_metab_outlier
+
+# Métricas resumen
+col_m1, col_m2, col_m3 = st.columns(3)
+col_m1.metric("Muestras marcadas", f"{iqr_outlier_mask.sum()} / {len(df_filtered)}")
+col_m2.metric("% outliers", f"{iqr_outlier_mask.sum() / len(df_filtered) * 100:.1f}%")
+col_m3.metric("Metabolitos con algún outlier", f"{(outside_iqr.sum(axis=0) > 0).sum()} / {len(metabolites)}")
+
+# Tabla de outliers por metabolito
+with st.expander("📊 Outliers por metabolito"):
+    outlier_per_metab = outside_iqr.sum(axis=0)
+    metab_iqr_df = pd.DataFrame(
+        {
+            "Metabolito": metabolites,
+            "N outliers": outlier_per_metab,
+            "% del total": [f"{v / len(df_filtered) * 100:.1f}%" for v in outlier_per_metab],
+            "Q1": [f"{v:.3f}" for v in Q1],
+            "Q3": [f"{v:.3f}" for v in Q3],
+            "IQR": [f"{v:.3f}" for v in IQR],
+            f"Límite inf ({iqr_k}×IQR)": [f"{v:.3f}" for v in lower_bound],
+            f"Límite sup ({iqr_k}×IQR)": [f"{v:.3f}" for v in upper_bound],
+        }
+    ).sort_values("N outliers", ascending=False)
+    st.dataframe(metab_iqr_df, hide_index=True, use_container_width=True)
+
+# Detalle de muestras outlier
+if iqr_outlier_mask.sum() > 0:
+    st.subheader("🔍 Muestras identificadas como outlier")
+
+    outlier_detail = []
+    for i in np.where(iqr_outlier_mask)[0]:
+        row = df_filtered.iloc[i]
+        metabs_fuera = [metabolites[j] for j in range(len(metabolites)) if outside_iqr[i, j]]
+        outlier_detail.append(
+            {
+                "ID": row.get("ID", f"#{i}"),
+                "Grupo": row.get("Group", "—"),
+                "N metab fuera": n_metab_outlier_per_sample[i],
+                "Metabolitos": ", ".join(metabs_fuera),
+            }
+        )
+
+    df_outlier_detail = pd.DataFrame(outlier_detail)
+    st.dataframe(df_outlier_detail, hide_index=True, use_container_width=True)
+
+    # Visualización: boxplots con outliers marcados
+    st.subheader("📦 Boxplots con outliers")
+    # Solo metabolitos que tienen outliers
+    metabs_with_outliers = [metabolites[j] for j in range(len(metabolites)) if outside_iqr[:, j].sum() > 0]
+
+    if metabs_with_outliers:
+        selected_metab_bp = st.selectbox("Metabolito a visualizar", metabs_with_outliers)
+        j_sel = metabolites.index(selected_metab_bp)
+
+        fig_bp = go.Figure()
+        # Boxplot del metabolito
+        fig_bp.add_trace(
+            go.Box(
+                y=X_metab[:, j_sel],
+                name=selected_metab_bp,
+                boxpoints="suspectedoutliers",
+                marker_color="steelblue",
+            )
+        )
+        # Marcar límites IQR
+        fig_bp.add_hline(
+            y=upper_bound[j_sel],
+            line_dash="dash",
+            line_color="red",
+            annotation_text=f"Q3 + {iqr_k}×IQR = {upper_bound[j_sel]:.3f}",
+        )
+        fig_bp.add_hline(
+            y=lower_bound[j_sel],
+            line_dash="dash",
+            line_color="red",
+            annotation_text=f"Q1 − {iqr_k}×IQR = {lower_bound[j_sel]:.3f}",
+        )
+        # Marcar outliers como puntos rojos
+        outlier_vals = X_metab[outside_iqr[:, j_sel], j_sel]
+        outlier_ids = (
+            df_filtered.iloc[np.where(outside_iqr[:, j_sel])[0]]["ID"].values if "ID" in df_filtered.columns else None
+        )
+        fig_bp.add_trace(
+            go.Scatter(
+                y=outlier_vals,
+                x=[selected_metab_bp] * len(outlier_vals),
+                mode="markers+text",
+                marker={"color": "red", "size": 10, "symbol": "x"},
+                text=outlier_ids if outlier_ids is not None else None,
+                textposition="top center",
+                name="Outliers IQR",
+            )
+        )
+        fig_bp.update_layout(height=400, title=f"Distribución de {selected_metab_bp} con límites {iqr_k}×IQR")
+        st.plotly_chart(fig_bp, use_container_width=True)
+
+    # Conclusión
+    st.markdown(f"""
+    **Resumen**: Con k={iqr_k} y criterio de ≥{min_metab_outlier} metabolito(s) fuera de rango,
+    se identifican **{iqr_outlier_mask.sum()} muestras** como potenciales outliers.
+
+    > 💡 **Tratamiento aplicado**: No se eliminan observaciones. Se emplea **winsorización al percentil 5-95**
+    > durante el entrenamiento como protección robusta, preservando la información de todas las muestras
+    > dado el reducido tamaño muestral (N={len(df_filtered)}).
+    """)
+else:
+    st.success(f"✓ No se detectaron outliers con k={iqr_k} y ≥{min_metab_outlier} metabolito(s) fuera de rango.")
 
 # ============================================================================
 # Footer

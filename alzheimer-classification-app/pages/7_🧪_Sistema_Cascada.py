@@ -1,6 +1,5 @@
-"""
-Módulo 7: Sistema de Clasificación en Cascada (Interactivo)
-============================================================
+"""Módulo 7: Sistema de Clasificación en Cascada (Interactivo).
+
 Página interactiva para explorar el sistema Stage 1 + Stage 2:
 - Búsqueda de umbrales según errores tolerados en zonas roja/verde
 - Selección de variables del Stage 2
@@ -10,26 +9,31 @@ Página interactiva para explorar el sistema Stage 1 + Stage 2:
 - Métricas y gráficos completos
 """
 
-import streamlit as st
-import pandas as pd
+import sys
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
 from plotly.subplots import make_subplots
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import (
     LeaveOneOut,
     RepeatedStratifiedKFold,
     StratifiedShuffleSplit,
     train_test_split,
 )
-from sklearn.metrics import balanced_accuracy_score
-from scipy.stats import pearsonr
-import sys
-import os
+from sklearn.preprocessing import StandardScaler
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from app_utils import load_data, initialize_session_state, WinsorizerTransformer
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from app_utils import (
+    DEFAULT_S1_FEATURES,
+    find_clinical_data,
+    initialize_session_state,
+    load_data,
+)
 
 # ============================================================================
 st.set_page_config(page_title="Sistema Cascada Interactivo", page_icon="🧪", layout="wide")
@@ -49,44 +53,22 @@ Todos los parámetros son configurables para experimentar.
 df_metab = load_data()
 
 # Cargar datos clínicos
-_candidates = [
-    os.path.join(os.path.dirname(__file__), "..", "..", "Segundo_Archivo_clean.xlsx"),
-    os.path.join(os.path.dirname(__file__), "..", "data", "Segundo_Archivo_clean.xlsx"),
-    os.path.join(os.getcwd(), "Segundo_Archivo_clean.xlsx"),
-]
-clinical_path = None
-for _p in _candidates:
-    if os.path.exists(_p):
-        clinical_path = _p
-        break
-
+clinical_path = find_clinical_data()
 if clinical_path is None:
     st.error("No se encuentra el archivo clínico 'Segundo_Archivo_clean.xlsx'")
     st.stop()
 
 df_clin = pd.read_excel(clinical_path)
 df_clin_sel = df_clin[["ID", "MMSE", "APOE", "Depression", "Cardiovascular disorder", "Age [y]"]].copy()
-df_clin_sel.rename(columns={"Age [y]": "Age_clin"}, inplace=True)
+df_clin_sel = df_clin_sel.rename(columns={"Age [y]": "Age_clin"})
 df = df_metab.merge(df_clin_sel, on="ID")
 
 # Features Stage 1 — parametrizado desde el modelo entrenado en page 4
-if "selected_features" in st.session_state and st.session_state["selected_features"]:
+if st.session_state.get("selected_features"):
     FEATURES_S1 = st.session_state["selected_features"]
 else:
     # Fallback: 11 features del pipeline por defecto
-    FEATURES_S1 = [
-        "DOPA",
-        "Cer(d18:1/20:0)",
-        "lysoPC.a.C18:2",
-        "PC.aa.C40:4",
-        "DHEAS",
-        "Arg",
-        "HexCer(d18:1/26:1)",
-        "DHEAS/lysoPC",
-        "DOPA*DHEAS",
-        "PC*DOPA",
-        "DHEAS/Cer20",
-    ]
+    FEATURES_S1 = list(DEFAULT_S1_FEATURES)
 
 # Obtener C y class_weight del modelo entrenado
 if "model_config" in st.session_state:
@@ -346,9 +328,9 @@ with col2:
 
 @st.cache_data
 def find_thresholds(P_s1_arr, y_arr, max_err_green, max_err_red):
-    """
-    Busca umbrales t_lo y t_hi que cumplan restricciones de errores
-    y maximicen la cobertura (pacientes fuera de zona amarilla).
+    """Busca umbrales t_lo y t_hi que cumplan restricciones de errores.
+
+    Maximiza la cobertura (pacientes fuera de zona amarilla).
     """
     # Generar candidatos ordenados
     probs_sorted = np.sort(np.unique(P_s1_arr))
@@ -515,7 +497,7 @@ with col_left:
     )
     # Asegurar que P(AD)_S1 siempre está
     if "P(AD)_S1" not in selected_vars:
-        selected_vars = ["P(AD)_S1"] + selected_vars
+        selected_vars = ["P(AD)_S1", *selected_vars]
         st.info("P(AD)_S1 añadido automáticamente (es el puente entre etapas).")
 
 with col_right:
@@ -592,26 +574,33 @@ st.info(
 
 run_button = st.button("▶️ Ejecutar Pipeline", type="primary", use_container_width=True)
 
-if run_button:
-    # --- Preparar columnas del Stage 2 ---
-    def build_X2(indices, P_s1_values):
-        """Construye la matriz X2 para los índices dados (indices relativos al df completo)."""
-        cols = []
-        for var in selected_vars:
-            if var == "P(AD)_S1":
-                cols.append(P_s1_values)
-            elif var == "MMSE":
-                cols.append(mmse[indices])
-            elif var == "APOE (0/1/2)":
-                cols.append(apoe[indices])
-            elif var == "Depresión (0/1)":
-                cols.append(dep[indices])
-            elif var == "Cardiopatía (0/1)":
-                cols.append(cardio[indices])
-            elif var == "Edad":
-                cols.append(age[indices])
-        return np.column_stack(cols)
 
+# --- Preparar columnas del Stage 2 (definido a nivel módulo para reutilizar) ---
+def build_X2(indices, P_s1_values):
+    """Construye la matriz X2 para los índices dados (indices relativos al df completo)."""
+    cols = []
+    for var in selected_vars:
+        if var == "P(AD)_S1":
+            cols.append(P_s1_values)
+        elif var == "MMSE":
+            cols.append(mmse[indices])
+        elif var == "APOE (0/1/2)":
+            cols.append(apoe[indices])
+        elif var == "Depresión (0/1)":
+            cols.append(dep[indices])
+        elif var == "Cardiopatía (0/1)":
+            cols.append(cardio[indices])
+        elif var == "Edad":
+            cols.append(age[indices])
+    return np.column_stack(cols)
+
+
+# C_value: si es modo fijo ya está definido; si es automático, usar fallback hasta que se ejecute pipeline
+if regularization_mode == "Búsqueda automática" and "C_value" not in dir():
+    C_value = 10.0  # Default hasta que el pipeline lo calcule
+
+
+if run_button:
     # --- Búsqueda de C si es automática ---
     if regularization_mode == "Búsqueda automática":
         st.subheader("🔍 Búsqueda de C óptimo (en train)")
@@ -689,7 +678,7 @@ if run_button:
                     y=c_df["Errores"],
                     mode="lines+markers",
                     name="Errores totales",
-                    line=dict(width=3, color="#e74c3c"),
+                    line={"width": 3, "color": "#e74c3c"},
                 )
             )
             fig_c.add_trace(
@@ -698,7 +687,7 @@ if run_button:
                     y=c_df["FN"],
                     mode="lines+markers",
                     name="FN",
-                    line=dict(width=2, dash="dash", color="#8e44ad"),
+                    line={"width": 2, "dash": "dash", "color": "#8e44ad"},
                 )
             )
             fig_c.add_trace(
@@ -707,7 +696,7 @@ if run_button:
                     y=c_df["FP"],
                     mode="lines+markers",
                     name="FP",
-                    line=dict(width=2, dash="dot", color="#3498db"),
+                    line={"width": 2, "dash": "dot", "color": "#3498db"},
                 )
             )
             fig_c.add_vline(x=np.log10(C_value), line_dash="dash", annotation_text=f"C*={C_value:.2f}")
@@ -795,10 +784,12 @@ if run_button:
     pred_test = np.full(n_test, -1)
     pred_test[verde_test] = 0
     pred_test[roja_test] = 1
+    P_s2_test_full = np.zeros(n_test)
     if amarilla_test.sum() > 0:
         X2_test = build_X2(test_idx[amarilla_test], P_s1_test_eval[amarilla_test])
         P_s2_test = lr2_final.predict_proba(X2_test)[:, 1]
         pred_test[amarilla_test] = (P_s2_test >= 0.5).astype(int)
+        P_s2_test_full[amarilla_test] = P_s2_test
 
     tp_te = ((pred_test == 1) & (y_test == 1)).sum()
     tn_te = ((pred_test == 0) & (y_test == 0)).sum()
@@ -869,7 +860,6 @@ if run_button:
     X2_full = build_X2(train_idx, P_s1)
 
     # VIF
-    from numpy.linalg import inv
 
     X2_with_const = np.column_stack([np.ones(n_train), X2_full])
     corr_matrix = np.corrcoef(X2_full, rowvar=False)
@@ -1011,18 +1001,38 @@ if run_button:
     # SECCIÓN 7: Matriz de Confusión y Análisis de Errores
     # ============================================================================
 
-    st.header("7️⃣ Resultados Detallados (Train CV)")
+    st.header("7️⃣ Resultados Detallados")
 
-    col1, col2 = st.columns(2)
+    # --- Totales (Train + Test) ---
+    tp_total = tp_tr + tp_te
+    tn_total = tn_tr + tn_te
+    fp_total = fp_tr + fp_te
+    fn_total = fn_tr + fn_te
+    n_total = n_train + n_test
+    sens_total = tp_total / max(tp_total + fn_total, 1)
+    spec_total = tn_total / max(tn_total + fp_total, 1)
+    ba_total = (sens_total + spec_total) / 2
+
+    # Zonas totales
+    verde_total = verde.sum() + verde_test.sum()
+    amarilla_total = amarilla.sum() + amarilla_test.sum()
+    roja_total = roja.sum() + roja_test.sum()
+
+    st.markdown(
+        f"**Resultados globales (N={n_total})**: {fn_total + fp_total} errores — "
+        f"BA={ba_total:.3f}, Sens={sens_total:.3f}, Spec={spec_total:.3f}"
+    )
+
+    col1, col2, col3 = st.columns([1, 1, 1])
 
     with col1:
-        st.markdown("#### Matriz de Confusión")
+        st.markdown("#### Matriz de Confusión (Total)")
         fig_cm = go.Figure(
             data=go.Heatmap(
-                z=[[tn_tr, fp_tr], [fn_tr, tp_tr]],
+                z=[[tn_total, fp_total], [fn_total, tp_total]],
                 x=["Pred NC", "Pred AD"],
                 y=["Real NC", "Real AD"],
-                text=[[f"TN={tn_tr}", f"FP={fp_tr}"], [f"FN={fn_tr}", f"TP={tp_tr}"]],
+                text=[[f"TN={tn_total}", f"FP={fp_total}"], [f"FN={fn_total}", f"TP={tp_total}"]],
                 texttemplate="%{text}",
                 textfont={"size": 18},
                 colorscale=[[0, "#27ae60"], [0.5, "#f7dc6f"], [1, "#e74c3c"]],
@@ -1033,51 +1043,97 @@ if run_button:
         st.plotly_chart(fig_cm, use_container_width=True)
 
     with col2:
-        st.markdown("#### Distribución por zonas")
-        zones_df = pd.DataFrame(
-            {
-                "Zona": ["🟢 Verde (NC directo)", "🟡 Amarilla (→ S2)", "🔴 Roja (AD directo)"],
-                "N pacientes": [verde.sum(), amarilla.sum(), roja.sum()],
-                "AD reales": [
-                    (verde & (y_for_thresh == 1)).sum(),
-                    (amarilla & (y_for_thresh == 1)).sum(),
-                    (roja & (y_for_thresh == 1)).sum(),
-                ],
-                "NC reales": [
-                    (verde & (y_for_thresh == 0)).sum(),
-                    (amarilla & (y_for_thresh == 0)).sum(),
-                    (roja & (y_for_thresh == 0)).sum(),
-                ],
-                "Errores": [err_verde_real, (pred_train[amarilla] != y_for_thresh[amarilla]).sum(), err_roja_real],
-            }
-        )
-        st.dataframe(zones_df, hide_index=True, use_container_width=True)
-
-        # Resumen gráfico
-        fig_pie = go.Figure(
-            go.Pie(
-                labels=[f"🟢 Verde ({verde.sum()})", f"🟡 Amarilla ({amarilla.sum()})", f"🔴 Roja ({roja.sum()})"],
-                values=[verde.sum(), amarilla.sum(), roja.sum()],
-                marker_colors=["#27ae60", "#f39c12", "#e74c3c"],
-                hole=0.3,
+        st.markdown("#### Confusión Train CV")
+        fig_cm_tr = go.Figure(
+            data=go.Heatmap(
+                z=[[tn_tr, fp_tr], [fn_tr, tp_tr]],
+                x=["Pred NC", "Pred AD"],
+                y=["Real NC", "Real AD"],
+                text=[[f"TN={tn_tr}", f"FP={fp_tr}"], [f"FN={fn_tr}", f"TP={tp_tr}"]],
+                texttemplate="%{text}",
+                textfont={"size": 14},
+                colorscale=[[0, "#27ae60"], [0.5, "#f7dc6f"], [1, "#e74c3c"]],
+                showscale=False,
             )
         )
-        fig_pie.update_layout(height=250, margin=dict(t=20, b=20))
-        st.plotly_chart(fig_pie, use_container_width=True)
+        fig_cm_tr.update_layout(height=250)
+        st.plotly_chart(fig_cm_tr, use_container_width=True)
 
-    # Análisis de errores
+    with col3:
+        st.markdown("#### Confusión Test")
+        fig_cm_te = go.Figure(
+            data=go.Heatmap(
+                z=[[tn_te, fp_te], [fn_te, tp_te]],
+                x=["Pred NC", "Pred AD"],
+                y=["Real NC", "Real AD"],
+                text=[[f"TN={tn_te}", f"FP={fp_te}"], [f"FN={fn_te}", f"TP={tp_te}"]],
+                texttemplate="%{text}",
+                textfont={"size": 14},
+                colorscale=[[0, "#27ae60"], [0.5, "#f7dc6f"], [1, "#e74c3c"]],
+                showscale=False,
+            )
+        )
+        fig_cm_te.update_layout(height=250)
+        st.plotly_chart(fig_cm_te, use_container_width=True)
+
+    # Distribución por zonas (total)
+    st.markdown("#### Distribución por zonas (Total)")
+    err_verde_test = (verde_test & (y_test == 1)).sum()
+    err_roja_test = (roja_test & (y_test == 0)).sum()
+    err_amarilla_train = (pred_train[amarilla] != y_for_thresh[amarilla]).sum()
+    err_amarilla_test = (pred_test[amarilla_test] != y_test[amarilla_test]).sum() if amarilla_test.sum() > 0 else 0
+
+    zones_df = pd.DataFrame(
+        {
+            "Zona": ["🟢 Verde (NC directo)", "🟡 Amarilla (→ S2)", "🔴 Roja (AD directo)", "**TOTAL**"],
+            "N (Train)": [verde.sum(), amarilla.sum(), roja.sum(), n_train],
+            "N (Test)": [verde_test.sum(), amarilla_test.sum(), roja_test.sum(), n_test],
+            "N (Total)": [verde_total, amarilla_total, roja_total, n_total],
+            "Err Train": [err_verde_real, err_amarilla_train, err_roja_real, fn_tr + fp_tr],
+            "Err Test": [err_verde_test, err_amarilla_test, err_roja_test, fn_te + fp_te],
+            "Err Total": [
+                err_verde_real + err_verde_test,
+                err_amarilla_train + err_amarilla_test,
+                err_roja_real + err_roja_test,
+                fn_total + fp_total,
+            ],
+        }
+    )
+    st.dataframe(zones_df, hide_index=True, use_container_width=True)
+
+    # Resumen gráfico
+    fig_pie = go.Figure(
+        go.Pie(
+            labels=[f"🟢 Verde ({verde_total})", f"🟡 Amarilla ({amarilla_total})", f"🔴 Roja ({roja_total})"],
+            values=[verde_total, amarilla_total, roja_total],
+            marker_colors=["#27ae60", "#f39c12", "#e74c3c"],
+            hole=0.3,
+        )
+    )
+    fig_pie.update_layout(height=250, margin={"t": 20, "b": 20})
+    st.plotly_chart(fig_pie, use_container_width=True)
+
+    # Análisis de errores (TODOS: train + test)
     st.markdown("#### Detalle de errores")
 
-    fn_mask = (pred_train == 0) & (y_for_thresh == 1)
-    fp_mask = (pred_train == 1) & (y_for_thresh == 0)
+    # Errores en train
+    fn_mask_tr = (pred_train == 0) & (y_for_thresh == 1)
+    fp_mask_tr = (pred_train == 1) & (y_for_thresh == 0)
+    # Errores en test
+    fn_mask_te = (pred_test == 0) & (y_test == 1)
+    fp_mask_te = (pred_test == 1) & (y_test == 0)
 
-    if fn_mask.sum() > 0:
-        st.markdown(f"**Falsos Negativos ({fn_mask.sum()})** — pacientes AD no detectados:")
+    total_fn = fn_mask_tr.sum() + fn_mask_te.sum()
+    total_fp = fp_mask_tr.sum() + fp_mask_te.sum()
+
+    if total_fn > 0:
+        st.markdown(f"**Falsos Negativos ({total_fn})** — pacientes AD no detectados:")
         fn_data = []
-        for i in np.where(fn_mask)[0]:
+        for i in np.where(fn_mask_tr)[0]:
             zona = "Verde" if verde[i] else "Amarilla"
             fn_data.append(
                 {
+                    "Set": "Train",
                     "ID": ids_train[i],
                     "P(AD)_S1": f"{P_s1[i]:.3f}",
                     "P(AD)_S2": f"{P_s2_train[i]:.3f}",
@@ -1089,15 +1145,32 @@ if run_button:
                     "Zona": zona,
                 }
             )
+        for i in np.where(fn_mask_te)[0]:
+            zona = "Verde" if verde_test[i] else "Amarilla"
+            fn_data.append(
+                {
+                    "Set": "Test",
+                    "ID": ids[test_idx[i]],
+                    "P(AD)_S1": f"{P_s1_test_eval[i]:.3f}",
+                    "P(AD)_S2": f"{P_s2_test_full[i]:.3f}" if amarilla_test[i] else "—",
+                    "MMSE": int(mmse[test_idx[i]]),
+                    "APOE": apoe_raw.iloc[test_idx[i]],
+                    "Depresión": "Sí" if dep[test_idx[i]] else "No",
+                    "Cardiopatía": "Sí" if cardio[test_idx[i]] else "No",
+                    "Edad": int(age[test_idx[i]]),
+                    "Zona": zona,
+                }
+            )
         st.dataframe(pd.DataFrame(fn_data), hide_index=True, use_container_width=True)
 
-    if fp_mask.sum() > 0:
-        st.markdown(f"**Falsos Positivos ({fp_mask.sum()})** — pacientes NC clasificados como AD:")
+    if total_fp > 0:
+        st.markdown(f"**Falsos Positivos ({total_fp})** — pacientes NC clasificados como AD:")
         fp_data = []
-        for i in np.where(fp_mask)[0]:
+        for i in np.where(fp_mask_tr)[0]:
             zona = "Roja" if roja[i] else "Amarilla"
             fp_data.append(
                 {
+                    "Set": "Train",
                     "ID": ids_train[i],
                     "P(AD)_S1": f"{P_s1[i]:.3f}",
                     "P(AD)_S2": f"{P_s2_train[i]:.3f}",
@@ -1106,6 +1179,22 @@ if run_button:
                     "Depresión": "Sí" if dep[train_idx[i]] else "No",
                     "Cardiopatía": "Sí" if cardio[train_idx[i]] else "No",
                     "Edad": int(age[train_idx[i]]),
+                    "Zona": zona,
+                }
+            )
+        for i in np.where(fp_mask_te)[0]:
+            zona = "Roja" if roja_test[i] else "Amarilla"
+            fp_data.append(
+                {
+                    "Set": "Test",
+                    "ID": ids[test_idx[i]],
+                    "P(AD)_S1": f"{P_s1_test_eval[i]:.3f}",
+                    "P(AD)_S2": f"{P_s2_test_full[i]:.3f}" if amarilla_test[i] else "—",
+                    "MMSE": int(mmse[test_idx[i]]),
+                    "APOE": apoe_raw.iloc[test_idx[i]],
+                    "Depresión": "Sí" if dep[test_idx[i]] else "No",
+                    "Cardiopatía": "Sí" if cardio[test_idx[i]] else "No",
+                    "Edad": int(age[test_idx[i]]),
                     "Zona": zona,
                 }
             )
@@ -1137,8 +1226,8 @@ if run_button:
    P(AD) < {t_lo:.4f}          {t_lo:.4f} ≤ P ≤ {t_hi:.4f}          P(AD) > {t_hi:.4f}
   ┌──────────────┐         ┌───────────────────────────┐    ┌──────────────┐
   │ 🟢 NC DIRECTO │         │  STAGE 2: Clínico         │    │ 🔴 AD DIRECTO │
-  │  {verde.sum()} pacientes  │         │  LogReg(C={C_value}, {cw_str})  │    │  {roja.sum()} pacientes  │
-  │  {err_verde_real} errores    │         │  Variables: {len(selected_vars)}          │    │  {err_roja_real} errores    │
+  │  {verde_total} pacientes  │         │  LogReg(C={C_value}, {cw_str})  │    │  {roja_total} pacientes  │
+  │  {err_verde_real + err_verde_test} errores    │         │  Variables: {len(selected_vars)}          │    │  {err_roja_real + err_roja_test} errores    │
   └──────────────┘         │  [{vars_str}]             │    └──────────────┘
                             └────────────┬──────────────┘
                                          │
@@ -1147,9 +1236,10 @@ if run_button:
                               ┌──────────┴───────────┐
                               │                      │
                               ▼                      ▼
-                          NC ({(pred_train[amarilla] == 0).sum()})              AD ({(pred_train[amarilla] == 1).sum()})
+                          NC ({(pred_train[amarilla] == 0).sum() + (pred_test[amarilla_test] == 0).sum()})              AD ({(pred_train[amarilla] == 1).sum() + (pred_test[amarilla_test] == 1).sum()})
 
-  RESULTADO (Train CV): {fn_tr + fp_tr} errores ({fn_tr} FN + {fp_tr} FP) | BA = {ba_train_final:.3f}
+  TOTAL: {fn_total + fp_total} errores ({fn_total} FN + {fp_total} FP) | BA = {ba_total:.3f}
+  (Train: {fn_tr + fp_tr} err, Test: {fn_te + fp_te} err)
 ```
 """)
 
@@ -1158,23 +1248,358 @@ if run_button:
     # ============================================================================
 
     st.header("9️⃣ Comparativa rápida")
-    st.markdown("Comparación del sistema actual vs alternativas de referencia.")
+    st.markdown("Comparación del sistema cascada vs Stage 1 solo.")
+
+    # S1 solo en test
+    fn_s1_test = ((pred_s1_test == 0) & (y_test == 1)).sum()
+    fp_s1_test = ((pred_s1_test == 1) & (y_test == 0)).sum()
 
     comp_data = pd.DataFrame(
         {
             "Configuración": [
-                "Solo Stage 1 (t=0.5)",
-                f"S1+S2 actual (C={C_value}, {cw_str})",
-                f"Configuración actual + umbrales ({max_err_verde}/{max_err_roja} err)",
+                "Solo Stage 1 (t=0.5) — Train",
+                "Solo Stage 1 (t=0.5) — Test",
+                f"Cascada (C_S2={C_value}, {cw_str}) — Train",
+                f"Cascada (C_S2={C_value}, {cw_str}) — Test",
+                "**Cascada — TOTAL**",
             ],
-            "Errores": [fn_s1 + fp_s1, fn_tr + fp_tr, fn_tr + fp_tr],
-            "FN": [fn_s1, fn_tr, fn_tr],
-            "FP": [fp_s1, fp_tr, fp_tr],
-            "BA": [f"{ba_s1_train:.3f}", f"{ba_train_final:.3f}", f"{ba_train_final:.3f}"],
-            "Cobertura zonas": ["0%", "0% (todos por S2)", f"{(verde.sum() + roja.sum()) * 100 / n_train:.0f}%"],
+            "N": [n_train, n_test, n_train, n_test, n_total],
+            "Errores": [fn_s1 + fp_s1, fn_s1_test + fp_s1_test, fn_tr + fp_tr, fn_te + fp_te, fn_total + fp_total],
+            "FN": [fn_s1, fn_s1_test, fn_tr, fn_te, fn_total],
+            "FP": [fp_s1, fp_s1_test, fp_tr, fp_te, fp_total],
+            "BA": [
+                f"{ba_s1_train:.3f}",
+                f"{ba_s1_test:.3f}",
+                f"{ba_train_final:.3f}",
+                f"{ba_test_final:.3f}",
+                f"{ba_total:.3f}",
+            ],
         }
     )
     st.dataframe(comp_data, hide_index=True, use_container_width=True)
 
 else:
     st.info("Pulsa **▶️ Ejecutar Pipeline** para correr el sistema con la configuración seleccionada.")
+
+# ============================================================================
+# SECCIÓN 10: Análisis de Estabilidad Multi-Seed (independiente del pipeline)
+# ============================================================================
+
+st.divider()
+st.header("🔟 Análisis de Estabilidad Multi-Seed")
+st.markdown("""
+Evalúa la robustez del sistema ejecutándolo con múltiples semillas de train/test split.
+Esto demuestra que los resultados no dependen de un split afortunado.
+""")
+
+col_ms1, col_ms2 = st.columns(2)
+with col_ms1:
+    n_seeds = st.number_input("Número de seeds a evaluar", 5, 100, 20, step=5, key="n_seeds_stability")
+with col_ms2:
+    run_stability = st.button("🔄 Ejecutar análisis de estabilidad", type="secondary")
+
+if run_stability:
+    _placeholder = st.empty()
+    _placeholder.info("Ejecutando análisis multi-seed...")
+    ms_results = []
+
+    for seed_i in range(n_seeds):
+        _placeholder.progress((seed_i + 1) / n_seeds, text=f"Seed {seed_i + 1}/{n_seeds}...")
+
+        # Train/test split con esta seed
+        idx_all = np.arange(n)
+        tr_idx_ms, te_idx_ms = train_test_split(idx_all, test_size=holdout_pct / 100.0, stratify=y, random_state=seed_i)
+        X_tr_ms, X_te_ms = X[tr_idx_ms], X[te_idx_ms]
+        y_tr_ms, y_te_ms = y[tr_idx_ms], y[te_idx_ms]
+        n_tr_ms = len(y_tr_ms)
+
+        # Stage 1: LOO-CV en train
+        P_s1_tr_ms = np.zeros(n_tr_ms)
+        for tr, te in LeaveOneOut().split(X_tr_ms, y_tr_ms):
+            X_w = _winsorize(X_tr_ms[tr])
+            sc_ms = StandardScaler().fit(X_w)
+            lr1_ms = LogisticRegression(C=C_S1, class_weight=CW_S1, max_iter=2000, random_state=42)
+            lr1_ms.fit(sc_ms.transform(X_w), y_tr_ms[tr])
+            P_s1_tr_ms[te] = lr1_ms.predict_proba(sc_ms.transform(X_tr_ms[te]))[:, 1]
+
+        # Umbrales (en train)
+        probs_sorted_ms = np.sort(np.unique(P_s1_tr_ms))
+        cands_ms = np.concatenate([[0.0], probs_sorted_ms, [1.0]])
+        best_tlo_ms, best_thi_ms, best_cov_ms = None, None, -1
+        for tl in cands_ms:
+            if ((P_s1_tr_ms < tl) & (y_tr_ms == 1)).sum() > max_err_verde:
+                continue
+            for th in cands_ms:
+                if th <= tl:
+                    continue
+                if ((P_s1_tr_ms > th) & (y_tr_ms == 0)).sum() > max_err_roja:
+                    continue
+                cov_ms = ((P_s1_tr_ms < tl) | (P_s1_tr_ms > th)).sum()
+                if cov_ms > best_cov_ms:
+                    best_cov_ms = cov_ms
+                    best_tlo_ms, best_thi_ms = tl, th
+
+        if best_tlo_ms is None:
+            continue  # No valid thresholds for this seed
+
+        # Zonas train
+        verde_ms = P_s1_tr_ms < best_tlo_ms
+        roja_ms = P_s1_tr_ms > best_thi_ms
+        amarilla_ms = ~verde_ms & ~roja_ms
+
+        # Stage 2: LOO en train
+        P_s2_tr_ms = np.zeros(n_tr_ms)
+        for tr, te in LeaveOneOut().split(X_tr_ms, y_tr_ms):
+            X_w = _winsorize(X_tr_ms[tr])
+            sc_ms = StandardScaler().fit(X_w)
+            lr1_ms = LogisticRegression(C=C_S1, class_weight=CW_S1, max_iter=2000, random_state=42)
+            lr1_ms.fit(sc_ms.transform(X_w), y_tr_ms[tr])
+            P_s1_inner_tr = lr1_ms.predict_proba(sc_ms.transform(X_w))[:, 1]
+            P_s1_inner_te = lr1_ms.predict_proba(sc_ms.transform(X_tr_ms[te]))[:, 1]
+
+            X2_tr_ms = build_X2(tr_idx_ms[tr], P_s1_inner_tr)
+            X2_te_ms = build_X2(tr_idx_ms[te], P_s1_inner_te)
+            lr2_ms = LogisticRegression(C=C_value, class_weight=class_weight, max_iter=2000, random_state=42)
+            lr2_ms.fit(X2_tr_ms, y_tr_ms[tr])
+            P_s2_tr_ms[te] = lr2_ms.predict_proba(X2_te_ms)[:, 1]
+
+        # Predicciones train
+        pred_tr_ms = np.full(n_tr_ms, -1)
+        pred_tr_ms[verde_ms] = 0
+        pred_tr_ms[roja_ms] = 1
+        pred_tr_ms[amarilla_ms] = (P_s2_tr_ms[amarilla_ms] >= 0.5).astype(int)
+
+        tp_tr_ms = ((pred_tr_ms == 1) & (y_tr_ms == 1)).sum()
+        tn_tr_ms = ((pred_tr_ms == 0) & (y_tr_ms == 0)).sum()
+        fn_tr_ms = ((pred_tr_ms == 0) & (y_tr_ms == 1)).sum()
+        fp_tr_ms = ((pred_tr_ms == 1) & (y_tr_ms == 0)).sum()
+        sens_tr_ms = tp_tr_ms / max(tp_tr_ms + fn_tr_ms, 1)
+        spec_tr_ms = tn_tr_ms / max(tn_tr_ms + fp_tr_ms, 1)
+        ba_tr_ms = (sens_tr_ms + spec_tr_ms) / 2
+
+        # Test evaluation
+        X_w_full = _winsorize(X_tr_ms)
+        sc_final_ms = StandardScaler().fit(X_w_full)
+        lr1_final_ms = LogisticRegression(C=C_S1, class_weight=CW_S1, max_iter=2000, random_state=42)
+        lr1_final_ms.fit(sc_final_ms.transform(X_w_full), y_tr_ms)
+        P_s1_te_ms = lr1_final_ms.predict_proba(sc_final_ms.transform(X_te_ms))[:, 1]
+
+        # Stage 1 solo test
+        ba_s1_te_ms = balanced_accuracy_score(y_te_ms, (P_s1_te_ms >= 0.5).astype(int))
+
+        # Zonas test
+        verde_te_ms = P_s1_te_ms < best_tlo_ms
+        roja_te_ms = P_s1_te_ms > best_thi_ms
+        amarilla_te_ms = ~verde_te_ms & ~roja_te_ms
+
+        # Stage 2 test
+        P_s1_tr_full = lr1_final_ms.predict_proba(sc_final_ms.transform(X_w_full))[:, 1]
+        X2_full_ms = build_X2(tr_idx_ms, P_s1_tr_full)
+        lr2_final_ms = LogisticRegression(C=C_value, class_weight=class_weight, max_iter=2000, random_state=42)
+        lr2_final_ms.fit(X2_full_ms, y_tr_ms)
+
+        pred_te_ms = np.full(len(y_te_ms), -1)
+        pred_te_ms[verde_te_ms] = 0
+        pred_te_ms[roja_te_ms] = 1
+        if amarilla_te_ms.sum() > 0:
+            X2_te_ms_am = build_X2(te_idx_ms[amarilla_te_ms], P_s1_te_ms[amarilla_te_ms])
+            P_s2_te_am = lr2_final_ms.predict_proba(X2_te_ms_am)[:, 1]
+            pred_te_ms[amarilla_te_ms] = (P_s2_te_am >= 0.5).astype(int)
+
+        tp_te_ms = ((pred_te_ms == 1) & (y_te_ms == 1)).sum()
+        tn_te_ms = ((pred_te_ms == 0) & (y_te_ms == 0)).sum()
+        fn_te_ms = ((pred_te_ms == 0) & (y_te_ms == 1)).sum()
+        fp_te_ms = ((pred_te_ms == 1) & (y_te_ms == 0)).sum()
+        sens_te_ms = tp_te_ms / max(tp_te_ms + fn_te_ms, 1)
+        spec_te_ms = tn_te_ms / max(tn_te_ms + fp_te_ms, 1)
+        ba_te_ms = (sens_te_ms + spec_te_ms) / 2
+
+        ms_results.append(
+            {
+                "Seed": seed_i,
+                "t_lo": best_tlo_ms,
+                "t_hi": best_thi_ms,
+                "Train_BA": ba_tr_ms,
+                "Train_Err": fn_tr_ms + fp_tr_ms,
+                "Test_BA": ba_te_ms,
+                "Test_Sens": sens_te_ms,
+                "Test_Spec": spec_te_ms,
+                "Test_Err": fn_te_ms + fp_te_ms,
+                "Test_FN": fn_te_ms,
+                "Test_FP": fp_te_ms,
+                "S1_Test_BA": ba_s1_te_ms,
+                "Cascade_Improvement": ba_te_ms - ba_s1_te_ms,
+                "N_verde_te": verde_te_ms.sum(),
+                "N_amarilla_te": amarilla_te_ms.sum(),
+                "N_roja_te": roja_te_ms.sum(),
+            }
+        )
+
+    _placeholder.empty()
+
+    # Guardar en session_state para persistir entre reruns
+    if ms_results:
+        st.session_state["ms_stability_results"] = pd.DataFrame(ms_results)
+        st.session_state["ms_stability_n_seeds"] = n_seeds
+    else:
+        st.session_state["ms_stability_results"] = None
+    st.rerun()
+
+# --- Mostrar resultados guardados ---
+if "ms_stability_results" in st.session_state and st.session_state["ms_stability_results"] is not None:
+    df_ms = st.session_state["ms_stability_results"]
+    n_valid = len(df_ms)
+    _n_seeds_used = st.session_state.get("ms_stability_n_seeds", n_valid)
+
+    st.success(f"✅ Análisis completado: {n_valid}/{_n_seeds_used} seeds válidas")
+
+    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+    col_s1.metric("BA Test (media)", f"{df_ms['Test_BA'].mean():.3f}")
+    col_s2.metric("BA Test (std)", f"{df_ms['Test_BA'].std():.3f}")
+    col_s3.metric("Errores Test (media)", f"{df_ms['Test_Err'].mean():.1f}")
+    col_s4.metric("Mejora vs S1 (media)", f"{df_ms['Cascade_Improvement'].mean():+.3f}")
+
+    # Percentil de seed actual
+    if holdout_seed in df_ms["Seed"].values:
+        ba_current = df_ms[df_ms["Seed"] == holdout_seed]["Test_BA"].values[0]
+        percentile = (df_ms["Test_BA"] <= ba_current).mean() * 100
+        st.info(f"📌 Seed actual ({holdout_seed}): BA_test={ba_current:.3f} — percentil {percentile:.0f}%")
+
+    # Tabla resumen
+    st.markdown("#### Distribución de métricas")
+    summary_metrics = ["Test_BA", "Test_Sens", "Test_Spec", "Test_Err", "Train_BA", "Cascade_Improvement"]
+    summary_data = []
+    for metric in summary_metrics:
+        vals = df_ms[metric]
+        summary_data.append(
+            {
+                "Métrica": metric,
+                "Media": f"{vals.mean():.3f}",
+                "Std": f"{vals.std():.3f}",
+                "Min": f"{vals.min():.3f}",
+                "Max": f"{vals.max():.3f}",
+                "IQR": f"[{vals.quantile(0.25):.3f}, {vals.quantile(0.75):.3f}]",
+            }
+        )
+    st.dataframe(pd.DataFrame(summary_data), hide_index=True, use_container_width=True)
+
+    # Estabilidad de umbrales
+    st.markdown("#### Estabilidad de umbrales")
+    col_u1, col_u2 = st.columns(2)
+    with col_u1:
+        st.metric("t_lo (media ± std)", f"{df_ms['t_lo'].mean():.4f} ± {df_ms['t_lo'].std():.4f}")
+    with col_u2:
+        st.metric("t_hi (media ± std)", f"{df_ms['t_hi'].mean():.4f} ± {df_ms['t_hi'].std():.4f}")
+
+    # Train-Test gap
+    gap = df_ms["Train_BA"] - df_ms["Test_BA"]
+    st.markdown("#### Overfitting check")
+    st.markdown(
+        f"Gap medio (Train − Test): **{gap.mean():.3f}** ± {gap.std():.3f} → "
+        f"{'✅ Sin overfitting' if gap.mean() < 0.03 else '⚠️ Gap moderado' if gap.mean() < 0.06 else '❌ Posible overfitting'}"
+    )
+
+    # Gráficos
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
+        fig_hist = go.Figure()
+        fig_hist.add_trace(
+            go.Histogram(
+                x=df_ms["Test_BA"],
+                nbinsx=12,
+                name="BA Test",
+                marker_color="steelblue",
+                opacity=0.7,
+            )
+        )
+        fig_hist.add_vline(
+            x=df_ms["Test_BA"].mean(), line_dash="dash", annotation_text=f"Media={df_ms['Test_BA'].mean():.3f}"
+        )
+        if holdout_seed in df_ms["Seed"].values:
+            fig_hist.add_vline(x=ba_current, line_dash="dot", line_color="red", annotation_text=f"Seed {holdout_seed}")
+        fig_hist.update_layout(
+            title="Distribución de BA (Test) sobre seeds",
+            xaxis_title="Balanced Accuracy",
+            yaxis_title="Frecuencia",
+            height=350,
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+
+    with col_g2:
+        fig_scatter = go.Figure()
+        fig_scatter.add_trace(
+            go.Scatter(
+                x=df_ms["S1_Test_BA"],
+                y=df_ms["Test_BA"],
+                mode="markers",
+                marker={"size": 8, "color": "steelblue"},
+                text=df_ms["Seed"],
+                name="Seeds",
+            )
+        )
+        # Línea diagonal (cascada = S1)
+        min_v = min(df_ms["S1_Test_BA"].min(), df_ms["Test_BA"].min()) - 0.02
+        max_v = max(df_ms["S1_Test_BA"].max(), df_ms["Test_BA"].max()) + 0.02
+        fig_scatter.add_trace(
+            go.Scatter(
+                x=[min_v, max_v],
+                y=[min_v, max_v],
+                mode="lines",
+                line={"dash": "dash", "color": "gray"},
+                name="Cascada = S1",
+                showlegend=True,
+            )
+        )
+        fig_scatter.update_layout(
+            title="Cascada vs S1 solo (por seed)",
+            xaxis_title="BA S1 solo (Test)",
+            yaxis_title="BA Cascada (Test)",
+            height=350,
+        )
+        st.plotly_chart(fig_scatter, use_container_width=True)
+
+    # Aporte del Stage 2
+    pct_better = (df_ms["Cascade_Improvement"] > 0).mean() * 100
+    pct_equal = (df_ms["Cascade_Improvement"] == 0).mean() * 100
+    pct_worse = (df_ms["Cascade_Improvement"] < 0).mean() * 100
+    st.markdown(
+        f"**Aporte del Stage 2**: Mejora en {pct_better:.0f}% de seeds, "
+        f"igual en {pct_equal:.0f}%, peor en {pct_worse:.0f}%"
+    )
+
+    # Interpretación
+    ba_std = df_ms["Test_BA"].std()
+    if ba_std < 0.03:
+        verdict = "🟢 MUY ESTABLE"
+        explanation = "La varianza entre seeds es baja. El resultado es robusto."
+    elif ba_std < 0.05:
+        verdict = "🟢 ESTABLE"
+        explanation = "Varianza aceptable para N=148. El resultado es fiable."
+    elif ba_std < 0.08:
+        verdict = "🟡 MODERADA"
+        explanation = "Varianza esperable por el tamaño muestral (N_test≈30). Reportar media±std."
+    else:
+        verdict = "🔴 INESTABLE"
+        explanation = "Alta varianza. Los resultados dependen del split."
+
+    st.markdown(f"#### Veredicto: {verdict}")
+    st.markdown(f"> {explanation}")
+
+    # Tabla completa expandible
+    with st.expander("📋 Ver resultados por seed"):
+        st.dataframe(
+            df_ms.style.format(
+                {
+                    "t_lo": "{:.4f}",
+                    "t_hi": "{:.4f}",
+                    "Train_BA": "{:.3f}",
+                    "Test_BA": "{:.3f}",
+                    "Test_Sens": "{:.3f}",
+                    "Test_Spec": "{:.3f}",
+                    "S1_Test_BA": "{:.3f}",
+                    "Cascade_Improvement": "{:+.3f}",
+                }
+            ),
+            hide_index=True,
+            use_container_width=True,
+        )

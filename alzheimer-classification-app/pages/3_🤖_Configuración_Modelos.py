@@ -1,29 +1,24 @@
-"""
-Módulo 3: Configuración de Modelos
-===================================
+"""Módulo 3: Configuración de Modelos.
+
 Selección de algoritmo y configuración de hiperparámetros.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RepeatedStratifiedKFold
 import sys
-import os
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
 
 # Añadir path al módulo principal
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app_utils import (
-    load_data,
-    get_metabolite_columns,
     get_bio_e_features,
+    get_metabolite_columns,
     get_minimal7_features,
     get_stable_features,
     initialize_session_state,
+    load_data,
 )
 
 # ============================================================================

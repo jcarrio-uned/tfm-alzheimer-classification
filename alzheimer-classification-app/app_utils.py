@@ -1,17 +1,73 @@
-"""
-Utilidades para la aplicación Streamlit
-========================================
+"""Utilidades para la aplicación Streamlit.
 
-Funciona compartidas entre módulos y gestión de estado de sesión.
+Funciones compartidas entre módulos y gestión de estado de sesión.
 """
 
-import streamlit as st
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import streamlit as st
 from scipy import stats
 from scipy.stats.mstats import winsorize
 from sklearn.base import BaseEstimator, TransformerMixin
+
+# ============================================================================
+# Constantes compartidas
+# ============================================================================
+
+ORIGINAL_METABS = [
+    "C10:2",
+    "Arg",
+    "DOPA",
+    "GCDCA",
+    "Spermidine",
+    "HipAcid",
+    "Cer(d18:1/20:0)",
+    "CE(22:5)",
+    "DG(16:0_18:2)",
+    "Cer(d18:0/24:1)",
+    "FA(18:2)",
+    "lysoPC.a.C18:2",
+    "PC.aa.C40:4",
+    "Hex2Cer(d18:1/20:0)",
+    "Hex3Cer(d18:1/24:1)",
+    "HexCer(d18:1/26:1)",
+    "DHEAS",
+    "Ind-SO4",
+    "SM.(OH).C24:1",
+    "TG(18:2_38:5)",
+]
+
+CLINICAL_DATA_FILENAME = "Segundo_Archivo_clean.xlsx"
+
+DEFAULT_S1_FEATURES = [
+    "DOPA",
+    "Cer(d18:1/20:0)",
+    "lysoPC.a.C18:2",
+    "PC.aa.C40:4",
+    "DHEAS",
+    "Arg",
+    "HexCer(d18:1/26:1)",
+    "DHEAS/lysoPC",
+    "DOPA*DHEAS",
+    "PC*DOPA",
+    "DHEAS/Cer20",
+]
+
+
+def find_clinical_data():
+    """Busca el archivo de datos clínicos en ubicaciones conocidas."""
+    app_dir = Path(__file__).resolve().parent
+    candidates = [
+        app_dir / "data" / CLINICAL_DATA_FILENAME,
+        app_dir.parent / CLINICAL_DATA_FILENAME,
+        Path.cwd() / CLINICAL_DATA_FILENAME,
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
 
 
 def load_data():
@@ -26,8 +82,8 @@ def load_data():
 
 
 def create_engineered_features(df):
-    """
-    Crea features engineered (ratios, sumas, interacciones).
+    """Crea features engineered (ratios, sumas, interacciones).
+
     Incluye las mejores features encontradas en experimentos de feature engineering.
 
     Parameters
@@ -39,6 +95,7 @@ def create_engineered_features(df):
     -------
     pd.DataFrame
         DataFrame con features engineered añadidas
+
     """
     df = df.copy()
 
@@ -83,8 +140,7 @@ def create_engineered_features(df):
 
 
 def apply_winsorization(X, percentile=0.05):
-    """
-    Aplica winsorización columna por columna al percentil especificado.
+    """Aplica winsorización columna por columna al percentil especificado.
 
     La winsorización trunca valores extremos empujándolos hacia los percentiles
     especificados. Reduce el impacto de outliers sin eliminar muestras.
@@ -112,6 +168,7 @@ def apply_winsorization(X, percentile=0.05):
     1. WINSORIZATION (5%) ← aquí
     2. STANDARDSCALER ← en pipeline
     3. LOGISTICREGRESSION ← en pipeline
+
     """
     X_winsor = np.empty_like(X)
     n_modified_total = 0
@@ -125,8 +182,7 @@ def apply_winsorization(X, percentile=0.05):
 
 
 class WinsorizerTransformer(BaseEstimator, TransformerMixin):
-    """
-    Sklearn-compatible winsorizer that learns percentile bounds from training data.
+    """Sklearn-compatible winsorizer that learns percentile bounds from training data.
 
     Parameters
     ----------
@@ -137,19 +193,23 @@ class WinsorizerTransformer(BaseEstimator, TransformerMixin):
         If False, transform() is a pass-through (only fit_transform clips).
         Default=False matches the TFM pipeline methodology where only
         training data is winsorized and test data stays raw.
+
     """
 
-    def __init__(self, percentile=0.05, clip_test=False):
+    def __init__(self, percentile=0.05, clip_test=False) -> None:
+        """Initialize with percentile and clip_test flag."""
         self.percentile = percentile
         self.clip_test = clip_test
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None):  # noqa: ARG002
+        """Compute percentile bounds from training data."""
         X = np.asarray(X)
         self.lower_ = np.percentile(X, self.percentile * 100, axis=0)
         self.upper_ = np.percentile(X, (1 - self.percentile) * 100, axis=0)
         return self
 
     def transform(self, X):
+        """Transform data — clips only if clip_test=True."""
         X = np.asarray(X, dtype=float).copy()
         if self.clip_test:
             for j in range(X.shape[1]):
@@ -173,8 +233,7 @@ def get_metabolite_columns(df):
 
 
 def calculate_effect_size(group1, group2):
-    """
-    Calcula Cohen's d (effect size) entre dos grupos.
+    """Calcula Cohen's d (effect size) entre dos grupos.
 
     Parameters
     ----------
@@ -185,6 +244,7 @@ def calculate_effect_size(group1, group2):
     -------
     float
         Cohen's d
+
     """
     n1, n2 = len(group1), len(group2)
     var1, var2 = np.var(group1, ddof=1), np.var(group2, ddof=1)
@@ -197,13 +257,13 @@ def calculate_effect_size(group1, group2):
 
 
 def get_feature_stats(df, metabolites):
-    """
-    Calcula estadísticas de cada feature por grupo.
+    """Calcula estadísticas de cada feature por grupo.
 
     Returns
     -------
     pd.DataFrame
         DataFrame con estadísticas por feature
+
     """
     ad_data = df[df["Group"] == "AD"]
     nc_data = df[df["Group"] == "NC"]
@@ -216,7 +276,7 @@ def get_feature_stats(df, metabolites):
 
         if len(ad_vals) > 0 and len(nc_vals) > 0:
             # Test t
-            t_stat, p_val = stats.ttest_ind(ad_vals, nc_vals)
+            _t_stat, p_val = stats.ttest_ind(ad_vals, nc_vals)
 
             # Effect size
             cohens_d = calculate_effect_size(ad_vals, nc_vals)
@@ -361,8 +421,7 @@ def get_engineered_features():
 
 
 def get_base_features_for_engineered(engineered_feature):
-    """
-    Retorna las features base necesarias para calcular una feature engineered.
+    """Retorna las features base necesarias para calcular una feature engineered.
 
     Parameters
     ----------
@@ -373,6 +432,7 @@ def get_base_features_for_engineered(engineered_feature):
     -------
     list
         Lista de features base necesarias
+
     """
     mapping = {
         "CerSum": ["Cer(d18:1/20:0)", "Cer(d18:0/24:1)"],
@@ -391,8 +451,7 @@ def get_base_features_for_engineered(engineered_feature):
 
 
 def compute_engineered_feature(feature_name, values_dict):
-    """
-    Calcula el valor de una feature engineered a partir de features base.
+    """Calcula el valor de una feature engineered a partir de features base.
 
     Parameters
     ----------
@@ -405,50 +464,49 @@ def compute_engineered_feature(feature_name, values_dict):
     -------
     float
         Valor calculado de la feature engineered
+
     """
     if feature_name == "CerSum":
         return values_dict.get("Cer(d18:1/20:0)", 0) + values_dict.get("Cer(d18:0/24:1)", 0)
 
-    elif feature_name == "DHEAS/Cer20":
+    if feature_name == "DHEAS/Cer20":
         cer20 = values_dict.get("Cer(d18:1/20:0)", 0)
         return values_dict.get("DHEAS", 0) / (cer20 + 1e-10)
 
-    elif feature_name == "DHEAS/lysoPC":
+    if feature_name == "DHEAS/lysoPC":
         lysopc = values_dict.get("lysoPC.a.C18:2", 0)
         return values_dict.get("DHEAS", 0) / (lysopc + 1e-10)  # Evitar división por cero
 
-    elif feature_name == "DOPA*lysoPC":
+    if feature_name == "DOPA*lysoPC":
         return values_dict.get("DOPA", 0) * values_dict.get("lysoPC.a.C18:2", 0)
 
-    elif feature_name == "lysoPC*DOPA":
+    if feature_name == "lysoPC*DOPA":
         return values_dict.get("lysoPC.a.C18:2", 0) * values_dict.get("DOPA", 0)
 
-    elif feature_name == "DOPA*DHEAS":
+    if feature_name == "DOPA*DHEAS":
         return values_dict.get("DOPA", 0) * values_dict.get("DHEAS", 0)
 
-    elif feature_name == "PC*DOPA":
+    if feature_name == "PC*DOPA":
         return values_dict.get("PC.aa.C40:4", 0) * values_dict.get("DOPA", 0)
 
-    elif feature_name == "lysoPC*PC":
+    if feature_name == "lysoPC*PC":
         return values_dict.get("lysoPC.a.C18:2", 0) * values_dict.get("PC.aa.C40:4", 0)
 
-    elif feature_name == "DOPA*PC.aa.C40:4":
+    if feature_name == "DOPA*PC.aa.C40:4":
         return values_dict.get("DOPA", 0) * values_dict.get("PC.aa.C40:4", 0)
 
-    elif feature_name == "PC.aa.C40:4/DHEAS":
+    if feature_name == "PC.aa.C40:4/DHEAS":
         dheas = values_dict.get("DHEAS", 0)
         return values_dict.get("PC.aa.C40:4", 0) / (dheas + 1e-10)
 
-    elif feature_name == "lysoPC.a.C18:2*DOPA":
+    if feature_name == "lysoPC.a.C18:2*DOPA":
         return values_dict.get("lysoPC.a.C18:2", 0) * values_dict.get("DOPA", 0)
 
-    else:
-        return 0.0
+    return 0.0
 
 
 def get_base_features_needed(selected_features):
-    """
-    Obtiene todas las features base necesarias (incluyendo las necesarias para engineered).
+    """Obtiene todas las features base necesarias (incluyendo las necesarias para engineered).
 
     Parameters
     ----------
@@ -459,6 +517,7 @@ def get_base_features_needed(selected_features):
     -------
     list
         Lista de features base que el usuario debe proporcionar
+
     """
     engineered = get_engineered_features()
     base_features = []
@@ -476,8 +535,7 @@ def get_base_features_needed(selected_features):
 
 
 def check_atypical_markers(sample_values, predicted_class, reference_stats, threshold=0.5):
-    """
-    Identifica marcadores que van en contra de la distribución del grupo predicho.
+    """Identifica marcadores que van en contra de la distribución del grupo predicho.
 
     Parameters
     ----------
@@ -494,6 +552,7 @@ def check_atypical_markers(sample_values, predicted_class, reference_stats, thre
     -------
     list
         Lista de alertas con marcadores atípicos
+
     """
     alerts = []
 
@@ -515,14 +574,7 @@ def check_atypical_markers(sample_values, predicted_class, reference_stats, thre
         # Determinar qué lado es "AD" y qué lado es "NC"
         decision_boundary = (ad_mean + nc_mean) / 2
 
-        if effect_size > 0:  # AD tiene valores mayores
-            is_on_ad_side = value > decision_boundary
-            expected_for_ad = "mayor"
-            expected_for_nc = "menor"
-        else:  # AD tiene valores menores
-            is_on_ad_side = value < decision_boundary
-            expected_for_ad = "menor"
-            expected_for_nc = "mayor"
+        is_on_ad_side = value > decision_boundary if effect_size > 0 else value < decision_boundary
 
         # Calcular distancia a la media esperada (qué tan atípico es el valor)
         if predicted_class == "AD":
@@ -577,14 +629,11 @@ def check_atypical_markers(sample_values, predicted_class, reference_stats, thre
             )
 
     # Ordenar alertas por severidad (effect size descendente) antes de retornar
-    alerts = sorted(alerts, key=lambda x: abs(x["effect_size"]), reverse=True)
-
-    return alerts
+    return sorted(alerts, key=lambda x: abs(x["effect_size"]), reverse=True)
 
 
 def compute_confidence_assessment(proba, sample_values, reference_stats, threshold_margin=0.15):
-    """
-    Evalúa el nivel de confianza de una predicción combinando múltiples indicadores.
+    """Evalúa el nivel de confianza de una predicción combinando múltiples indicadores.
 
     Factores de incertidumbre analizados:
     1. Margen de probabilidad: distancia de P(AD) al umbral 0.5
@@ -613,6 +662,7 @@ def compute_confidence_assessment(proba, sample_values, reference_stats, thresho
         - recommendation: texto de recomendación clínica
         - needs_review: bool, si la muestra debería ser revisada
         - factors: lista de factores que contribuyen a la incertidumbre
+
     """
     margin = abs(proba - 0.5)
     predicted_class = "AD" if proba >= 0.5 else "NC"
@@ -644,19 +694,14 @@ def compute_confidence_assessment(proba, sample_values, reference_stats, thresho
         ad_mean = reference_stats.loc[met, "ad_mean"]
         nc_mean = reference_stats.loc[met, "nc_mean"]
         val = sample_values[met]
-        midpoint = (ad_mean + nc_mean) / 2
+        (ad_mean + nc_mean) / 2
 
         # Comprobar si el valor está en el lado incorrecto
         if predicted_class == "AD":
-            if direction == "low_in_AD" and val > nc_mean:
+            if (direction == "low_in_AD" and val > nc_mean) or (direction == "high_in_AD" and val < nc_mean):
                 contradictions.append(met)
-            elif direction == "high_in_AD" and val < nc_mean:
-                contradictions.append(met)
-        else:  # NC
-            if direction == "low_in_AD" and val < ad_mean:
-                contradictions.append(met)
-            elif direction == "high_in_AD" and val > ad_mean:
-                contradictions.append(met)
+        elif (direction == "low_in_AD" and val < ad_mean) or (direction == "high_in_AD" and val > ad_mean):
+            contradictions.append(met)
 
     n_contradictions = len(contradictions)
 
@@ -719,13 +764,13 @@ def compute_confidence_assessment(proba, sample_values, reference_stats, thresho
     }
 
 
-def format_metric_with_ci(mean, std, n_folds=50):
+def format_metric_with_ci(mean, std, n_folds=50) -> str:
     """Formatea una métrica con intervalo de confianza."""
     ci = 1.96 * std / np.sqrt(n_folds)
     return f"{mean:.3f} ± {std:.3f} (95% CI: [{mean - ci:.3f}, {mean + ci:.3f}])"
 
 
-def initialize_session_state():
+def initialize_session_state() -> None:
     """Inicializa variables de estado de la sesión."""
     if "model_trained" not in st.session_state:
         st.session_state.model_trained = False
