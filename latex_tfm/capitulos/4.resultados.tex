@@ -335,7 +335,7 @@ Los resultados fueron:
     \item \textbf{Stage 1 + Stage 2}: BA = 0,910 $\pm$ 0,051 (sistema completo, con reclasificación clínica de ambiguos)
 \end{itemize}
 
-La mejora de +6,0 puntos porcentuales de BA al añadir el Stage 2 es estadísticamente significativa: un test de rangos con signo de Wilcoxon aplicado sobre las 100 diferencias pareadas arroja $W = 3975{,}5$, $p < 0{,}001$ (correlación biserial por rangos $r = 0{,}55$). En 74 de las 100 particiones el sistema completo superó al Stage 1 solo, y solo en 19 ocurrió lo contrario.
+La mejora de +6,0 puntos porcentuales de BA al añadir el Stage 2 es estadísticamente significativa: un test de rangos con signo de Wilcoxon aplicado sobre las 100 diferencias pareadas arroja $W = 3975{,}5$, $p < 0{,}001$ (correlación biserial por rangos $r = 0{,}55$). En 74 de las 100 particiones el sistema completo superó al Stage 1 solo, en 19 ocurrió lo contrario y en las 7 restantes ambos obtuvieron la misma BA.
 
 Como referencia de contraste, una regresión logística monolítica que combinase metabolómica y variables clínicas directamente en un modelo único alcanzaría BA = 0,930 $\pm$ 0,045 sobre las mismas 100 particiones. Sin embargo, esa arquitectura sacrifica interpretabilidad y gestión explícita de la incertidumbre, dos elementos clínicamente relevantes. El trade-off final prioriza la explicitación de dónde hay ambigüedad sobre la maximización de una métrica única.
 
@@ -509,7 +509,7 @@ es especialmente fuerte.
 
 \subsection{Sensibilidad a la tolerancia de errores extremos}
 
-Antes de fijar los umbrales del Stage 1, conviene precisar qué se entiende por restricción de error extremo nulo. Sean $\varepsilon_g$ y $\varepsilon_r$ dos márgenes de tolerancia que cuantifican cuántos errores clásicos (falsos positivos en la zona verde, falsos negativos en la roja) se permite al sistema al aplicar esos umbrales directos. La formulación estricta del sistema usa $\varepsilon_g=0$ y $\varepsilon_r=0$, es decir, cero tolerancia a errores dentro de las zonas extremas. Precisamente porque esa formulación es rígida, se comparó con variantes más tolerantes ($\varepsilon_g\leq 1$, $\varepsilon_r\leq 1$) para comprobar si esa rigidez compraba demasiada prudencia a costa de perder cobertura útil. El patrón fue bastante instructivo.
+Antes de fijar los umbrales del Stage 1, conviene precisar qué se entiende por restricción de error extremo nulo. Sean $\varepsilon_g$ y $\varepsilon_r$ dos márgenes de tolerancia definidos como el número máximo de errores (en valor absoluto por partición) que se permite dentro de cada zona extrema: $\varepsilon_g$ es el número máximo de falsos positivos admitidos en la zona verde (sujetos clasificados como NC con alta confianza que en realidad son AD), y $\varepsilon_r$ el número máximo de falsos negativos admitidos en la zona roja (sujetos clasificados como AD con alta confianza que en realidad son NC). La formulación estricta del sistema usa $\varepsilon_g=0$ y $\varepsilon_r=0$, es decir, cero tolerancia a errores dentro de las zonas extremas. Precisamente porque esa formulación es rígida, se comparó con variantes más tolerantes ($\varepsilon_g\leq 1$, $\varepsilon_r\leq 1$) para comprobar si esa rigidez compraba demasiada prudencia a costa de perder cobertura útil. El patrón fue bastante instructivo.
 
 Relajar los márgenes $\varepsilon$ aumenta la resolución directa del Stage 1, sobre todo por la zona roja o por la expansión de la verde, pero ese beneficio no aparece gratis: la BA media del sistema no mejora respecto a la formulación estricta, y los errores permitidos dentro de las zonas extremas dejan de ser nulos por diseño. Por eso la opción $\varepsilon_g=0,\ \varepsilon_r=0$ no debe entenderse como una rigidez caprichosa, sino como la variante que mejor preserva la seguridad de las zonas extremas sin sacrificar rendimiento global.
 
@@ -578,7 +578,7 @@ contexto clínico interpretable y que no resultaran claramente redundantes respe
 MMSE & 0 & 23,13 & 29,47 & $-2{,}20$ \\
 APOE (riesgo ordinal) & 0 & 0,54 & 0,46 & +0,14 \\
 Depresión & 0 & 0,22 & 0,07 & +0,43 \\
-Cardiopatía & 0 & 0,17 & 0,24 & $-0{,}17$ \\
+Trastorno cardiovascular & 0 & 0,17 & 0,24 & $-0{,}17$ \\
 Edad & 0 & 71,17 & 70,92 & +0,03 \\
 \hline
 \end{tabular}
@@ -586,7 +586,7 @@ Edad & 0 & 71,17 & 70,92 & +0,03 \\
 \end{table}
 
 La lectura de este bloque clínico es bastante clara. MMSE concentra la mayor separación directa, depresión aporta una
-señal moderada y APOE una señal más discreta, mientras que cardiopatía y edad son mucho más débiles si se leen de forma
+señal moderada y APOE una señal más discreta, mientras que trastorno cardiovascular y edad son mucho más débiles si se leen de forma
 aislada. Aun así, el segundo escalón no se diseña como un clasificador clínico independiente, sino como una
 reinterpretación contextual de la probabilidad metabolómica dentro de la zona amarilla, así que la fuerza univariante,
 por sí sola, no basta para decidir qué variables deben quedarse.
@@ -608,11 +608,11 @@ preliminar dentro de la zona amarilla, no como la evaluación definitiva del sis
 \hline
 $P(\text{AD})_{S1}$ solo & 0,773 \\
 $\text{MMSE} + \text{APOE}$ & 0,893 \\
-$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{Cardiopatía}$ & 0,883 \\
-$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{Cardiopatía} + \text{Edad}$ & 0,880 \\
+$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{T. cardiovascular}$ & 0,883 \\
+$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{T. cardiovascular} + \text{Edad}$ & 0,880 \\
 $P(\text{AD})_{S1}$ + MMSE + APOE & 0,888 \\
-$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + Cardiopatía & 0,914 \\
-$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + Cardiopatía + Edad & 0,909 \\
+$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + T. cardiovascular & 0,914 \\
+$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + T. cardiovascular + Edad & 0,909 \\
 \hline
 \end{tabular}
 }
@@ -709,7 +709,7 @@ Por tanto, el sistema de dos etapas no debe defenderse como la solución que max
 \hline
 0,1 & 0,893 & 0,930 & 0,856 \\
 1 & 0,899 & 0,930 & 0,868 \\
-10 & 0,910 & 0,943 & 0,877 \\
+\textbf{10 (elegido)} & \textbf{0,910} & \textbf{0,943} & \textbf{0,877} \\
 \hline
 \end{tabular}
 }

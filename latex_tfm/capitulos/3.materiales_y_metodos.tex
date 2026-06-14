@@ -16,7 +16,7 @@ f: \mathbb{R}^p \longrightarrow [0,1], \qquad f(\mathbf{x}) = P(y=1\mid\mathbf{x
 capaz de discriminar entre ambos grupos con capacidad de generalización y un grado de interpretabilidad clínicamente útil.
 
 Ese planteamiento inicial es metodológicamente correcto, pero no agota el problema clínico y, a medida que avanza el
-trabajo aparecen dos hechos que obligan a matizarlo. El primero es estadístico: con $N=148$ y una matriz de señal
+trabajo aparecen dos hechos que obligan a matizarlo. El primero es estadístico: con $n=148$ y una matriz de señal
 moderada, la ambigüedad entre clases no desaparece aunque el modelo sea razonable. El segundo es clínico: el coste de un
 falso negativo es mayor que el de un falso positivo, por lo que una formulación completamente simétrica del error resulta
 ineficiente.
@@ -72,7 +72,7 @@ reclutados entre familiares y voluntarios.
 
 La matriz final con la que se trabaja en este TFM contiene 148 sujetos: 89 AD y 59 NC. El punto de partida no es el
 metaboloma bruto completo, sino el dataset residualizado de 20 metabolitos empleado en el marco del estudio de Bernal et
-al., que aquí se adopta como entrada analítica de partida. La diferencia respecto a los 139 casos del artículo no
+al.~\parencite{bernal2025metabolomics}, que aquí se adopta como entrada analítica de partida. La diferencia respecto a los 139 casos del artículo no
 responde a un cambio conceptual del problema clínico, sino a que allí se aplican filtrados adicionales dentro de
 determinadas familias bioquímicas antes de la clasificación, mientras que en este trabajo se parte de esa matriz ya
 estabilizada y se preservan todos los sujetos con información útil para el análisis multivariante.
@@ -198,7 +198,7 @@ Además del bloque metabolómico, se dispone de variables clínicas que no se in
     \item \textbf{MMSE} (\textit{Mini-Mental State Examination}): puntuación cognitiva de 0 a 30.
     \item \textbf{APOE}: genotipo de apolipoproteína E (e3/e3, e3/e4, e4/e4).
     \item \textbf{Depresión}: diagnóstico clínico concomitante.
-    \item \textbf{Cardiopatía}: comorbilidad cardiovascular considerada en el segundo escalón del sistema.
+    \item \textbf{Trastorno cardiovascular}: comorbilidad cardiovascular considerada en el segundo escalón del sistema.
     \item \textbf{Edad}: covariable demográfica reconsiderada como candidata clínica del segundo escalón.
 \end{itemize}
 
@@ -228,14 +228,14 @@ siguen precisamente ese orden lógico.
 \hline
 \textbf{Característica} & \textbf{Valor} \\
 \hline
-Sujetos totales & 148 \\
+Sujetos totales ($n$) & 148 \\
 AD & 89 (60,1\%) \\
 NC & 59 (39,9\%) \\
-Variables metabolómicas & 20 residuales \\
+Variables metabolómicas ($p$) & 20 residuales \\
 Valores faltantes & 0 \\
 Ratio AD:NC & 1,51:1 \\
 Ratio $n/p$ & 7,4 \\
-EPV (clase minoritaria / variables) & 3,0 \\
+EPV (clase minoritaria / $p$) & 3,0 \\
 \hline
 \end{tabular}
 \end{table}
@@ -443,7 +443,7 @@ Ningún dato del sujeto $i \in \mathcal{V}_k$ participa en el cálculo de $\bar{
 
 \subsection{Esquema de validación para desarrollo}
 
-Durante la fase de desarrollo (comparación de familias, selección de variables e incorporación de features construidas), se emplea \textit{Stratified Shuffle Split} con 200 particiones (80\% train, 20\% test, estratificado por clase). Este esquema permite observar cómo cambia el comportamiento del modelo cuando se altera la composición exacta del entrenamiento sin depender de un único corte arbitrario. En cada partición se registran como mínimo BA\textsubscript{train}, BA\textsubscript{test} y AUC\textsubscript{test}; cuando la interpretación clínica lo requiere, también se consideran sensibilidad, especificidad y número de errores.
+Durante la fase de desarrollo (comparación de familias, selección de variables e incorporación de features construidas), se emplea \textit{Stratified Shuffle Split} con 200 particiones (80\% train, 20\% test, estratificado por clase), denominado en adelante SSS-200. Este esquema permite observar cómo cambia el comportamiento del modelo cuando se altera la composición exacta del entrenamiento sin depender de un único corte arbitrario. En cada partición se registran como mínimo BA\textsubscript{train}, BA\textsubscript{test} y AUC\textsubscript{test}; cuando la interpretación clínica lo requiere, también se consideran sensibilidad, especificidad y número de errores.
 
 La métrica primaria de comparación es la Balanced Accuracy en test, porque corrige el desbalance moderado de clases y obliga a vigilar simultáneamente sensibilidad y especificidad. El \textbf{gap de sobreajuste} se define como:
 
@@ -853,7 +853,7 @@ prácticas: disponibilidad suficiente de cada variable en la cohorte, escala y c
 conjunto, plausibilidad clínica en el contexto del deterioro cognitivo y complementariedad potencial respecto a la
 probabilidad metabolómica generada por el primer escalón.
 
-Bajo ese criterio se inspeccionaron MMSE, APOE, depresión, cardiopatía y edad, prestando especial atención a que ninguna
+Bajo ese criterio se inspeccionaron MMSE, APOE, depresión, trastorno cardiovascular y edad, prestando especial atención a que ninguna
 variable fuese casi constante, a que su codificación mantuviera una lectura clínica razonable y a que el bloque conjunto
 no introdujera una redundancia evidente respecto al resumen probabilístico del Stage 1. La evidencia empírica de esta
 criba se presenta más adelante; aquí interesa dejar claro que el segundo escalón no nace por acumulación oportunista de
@@ -863,7 +863,7 @@ covariables, sino a partir de un bloque pequeño, interpretable y compatible con
 
 La entrada del Stage 2 combina la probabilidad $P(\text{AD})_{S1}$ con un pequeño bloque de variables clínicas
 complementarias. La matriz candidata de este segundo escalón se construyó a partir de MMSE, APOE, depresión,
-cardiopatía y edad, aunque la selección final dentro de ese conjunto se reserva para el capítulo de resultados.
+trastorno cardiovascular y edad, aunque la selección final dentro de ese conjunto se reserva para el capítulo de resultados.
 
 La codificación se diseñó para mantener interpretabilidad y estabilidad. APOE se expresa de forma ordinal según carga de
 riesgo, las variables dicotómicas se conservan como indicadores binarios y las variables continuas se integran en el

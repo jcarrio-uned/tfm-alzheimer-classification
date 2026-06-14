@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  14 JUN 2026 11:04
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.31)  14 JUN 2026 13:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -975,7 +975,7 @@ Package babel Info: Importing data for english
 (babel)             from babel-en.ini. Reported on input line 3.
 LaTeX Info: Redefining \. on input line 4.
 LaTeX Info: Redefining \% on input line 4.
-) (./capitulos/1.introduccion.aux) (./capitulos/2.estado_del_arte.aux) (./capitulos/3.materiales_y_metodos.aux) (./capitulos/4.resultados.aux) (./capitulos/5.conclusiones.aux) (./apendice_ejemplo.aux))
+) (./otros/acronimos.aux) (./capitulos/1.introduccion.aux) (./capitulos/2.estado_del_arte.aux) (./capitulos/3.materiales_y_metodos.aux) (./capitulos/4.resultados.aux) (./capitulos/5.conclusiones.aux) (./apendice_ejemplo.aux))
 \openout1 = `Documento_maestro.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 113.
@@ -1092,7 +1092,7 @@ Package hyperref Info: Link coloring ON on input line 113.
 \openout2 = `otros/portada.aux'.
 
  (./otros/portada.tex
-<imagenes/logo_informatica_s.png, id=392, 371.3875pt x 177.66376pt>
+<imagenes/logo_informatica_s.png, id=400, 371.3875pt x 177.66376pt>
 File: imagenes/logo_informatica_s.png Graphic file (type png)
 <use imagenes/logo_informatica_s.png>
 Package pdftex.def Info: imagenes/logo_informatica_s.png  used on input line 3.
@@ -1119,6 +1119,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \openout2 = `otros/agradecimientos.aux'.
 
  (./otros/agradecimientos.tex) [3
+
 
 ] [4
 
@@ -1190,11 +1191,20 @@ LaTeX Info: Redefining \% on input line 3.
 \openout10 = `Documento_maestro.lot'.
 
  [16]
+\openout2 = `otros/acronimos.aux'.
+
+ (./otros/acronimos.tex
+ignored: Infinite glue shrinkage found in box being split [17
+
+
+]) [18]
 \openout2 = `capitulos/1.introduccion.aux'.
 
  (./capitulos/1.introduccion.tex
 Cap\'{\i }tulo 1.
 [1
+
+
 
 
 
@@ -1205,9 +1215,9 @@ LaTeX Info: Redefining \% on input line 34.
 Package babel Info: 'spanish' activates 'spanish' shorthands.
 (babel)             Reported on input line 34.
  [2])
-LaTeX Info: Redefining \sptext on input line 141.
-LaTeX Info: Redefining \. on input line 141.
-LaTeX Info: Redefining \% on input line 141.
+LaTeX Info: Redefining \sptext on input line 143.
+LaTeX Info: Redefining \. on input line 143.
+LaTeX Info: Redefining \% on input line 143.
  [3]
 \openout2 = `capitulos/2.estado_del_arte.aux'.
 
@@ -1238,9 +1248,9 @@ LaTeX Info: Redefining \sptext on input line 88.
 LaTeX Info: Redefining \. on input line 88.
 LaTeX Info: Redefining \% on input line 88.
  [8])
-LaTeX Info: Redefining \sptext on input line 142.
-LaTeX Info: Redefining \. on input line 142.
-LaTeX Info: Redefining \% on input line 142.
+LaTeX Info: Redefining \sptext on input line 144.
+LaTeX Info: Redefining \. on input line 144.
+LaTeX Info: Redefining \% on input line 144.
  [9]
 \openout2 = `capitulos/3.materiales_y_metodos.aux'.
 
@@ -1256,7 +1266,7 @@ LaTeX Info: Redefining \% on input line 1.
 ]
 Cap\'{\i }tulo 3.
 [11]
-<imagenes/figuras/sistema_completo.png, id=833, 412.54124pt x 373.395pt>
+<imagenes/figuras/sistema_completo.png, id=854, 412.54124pt x 373.395pt>
 File: imagenes/figuras/sistema_completo.png Graphic file (type png)
 <use imagenes/figuras/sistema_completo.png>
 Package pdftex.def Info: imagenes/figuras/sistema_completo.png  used on input line 58.
@@ -1391,36 +1401,36 @@ LaTeX Info: Redefining \sptext on input line 985.
 LaTeX Info: Redefining \. on input line 985.
 LaTeX Info: Redefining \% on input line 985.
  [37]
-<imagenes/capturas_app/app_01_seleccion_variables.png, id=1006, 2780.13657pt x 1632.85031pt>
+<imagenes/capturas_app/app_01_seleccion_variables.png, id=1029, 2780.13657pt x 1632.85031pt>
 File: imagenes/capturas_app/app_01_seleccion_variables.png Graphic file (type png)
 <use imagenes/capturas_app/app_01_seleccion_variables.png>
 Package pdftex.def Info: imagenes/capturas_app/app_01_seleccion_variables.png  used on input line 990.
 (pdftex.def)             Requested size: 230.0431pt x 135.09052pt.
-<imagenes/capturas_app/app_02_configuracion_modelos.png, id=1007, 2784.65344pt x 1601.2322pt>
+<imagenes/capturas_app/app_02_configuracion_modelos.png, id=1030, 2784.65344pt x 1601.2322pt>
 File: imagenes/capturas_app/app_02_configuracion_modelos.png Graphic file (type png)
 <use imagenes/capturas_app/app_02_configuracion_modelos.png>
 Package pdftex.def Info: imagenes/capturas_app/app_02_configuracion_modelos.png  used on input line 992.
 (pdftex.def)             Requested size: 230.0431pt x 132.2792pt.
-<imagenes/capturas_app/app_03_evaluacion.png, id=1008, 2800.4625pt x 1622.31094pt>
+<imagenes/capturas_app/app_03_evaluacion.png, id=1031, 2800.4625pt x 1622.31094pt>
 File: imagenes/capturas_app/app_03_evaluacion.png Graphic file (type png)
 <use imagenes/capturas_app/app_03_evaluacion.png>
 Package pdftex.def Info: imagenes/capturas_app/app_03_evaluacion.png  used on input line 999.
 (pdftex.def)             Requested size: 230.0431pt x 133.25314pt.
-<imagenes/capturas_app/app_04_prediccion_individual.png, id=1009, 2761.31625pt x 1592.19844pt>
+<imagenes/capturas_app/app_04_prediccion_individual.png, id=1032, 2761.31625pt x 1592.19844pt>
 File: imagenes/capturas_app/app_04_prediccion_individual.png Graphic file (type png)
 <use imagenes/capturas_app/app_04_prediccion_individual.png>
 Package pdftex.def Info: imagenes/capturas_app/app_04_prediccion_individual.png  used on input line 1001.
 (pdftex.def)             Requested size: 230.0431pt x 132.62619pt.
 )
-LaTeX Info: Redefining \sptext on input line 143.
-LaTeX Info: Redefining \. on input line 143.
-LaTeX Info: Redefining \% on input line 143.
+LaTeX Info: Redefining \sptext on input line 145.
+LaTeX Info: Redefining \. on input line 145.
+LaTeX Info: Redefining \% on input line 145.
  [38 <./imagenes/capturas_app/app_01_seleccion_variables.png> <./imagenes/capturas_app/app_02_configuracion_modelos.png> <./imagenes/capturas_app/app_03_evaluacion.png> <./imagenes/capturas_app/app_04_prediccion_individual.png>]
 \openout2 = `capitulos/4.resultados.aux'.
 
  (./capitulos/4.resultados.tex
 Cap\'{\i }tulo 4.
-<imagenes/figuras/top_effect_sizes.png, id=1018, 578.16pt x 433.62pt>
+<imagenes/figuras/top_effect_sizes.png, id=1041, 578.16pt x 433.62pt>
 File: imagenes/figuras/top_effect_sizes.png Graphic file (type png)
 <use imagenes/figuras/top_effect_sizes.png>
 Package pdftex.def Info: imagenes/figuras/top_effect_sizes.png  used on input line 38.
@@ -1431,7 +1441,7 @@ Package pdftex.def Info: imagenes/figuras/top_effect_sizes.png  used on input li
 
 
 ]
-<imagenes/figuras/pca_scatter.png, id=1024, 505.89pt x 361.35pt>
+<imagenes/figuras/pca_scatter.png, id=1046, 505.89pt x 361.35pt>
 File: imagenes/figuras/pca_scatter.png Graphic file (type png)
 <use imagenes/figuras/pca_scatter.png>
 Package pdftex.def Info: imagenes/figuras/pca_scatter.png  used on input line 50.
@@ -1452,7 +1462,7 @@ LaTeX Info: Redefining \sptext on input line 194.
 LaTeX Info: Redefining \. on input line 194.
 LaTeX Info: Redefining \% on input line 194.
  [43]
-<imagenes/figuras/feature_set_comparison_results.png, id=1048, 939.51pt x 542.025pt>
+<imagenes/figuras/feature_set_comparison_results.png, id=1071, 939.51pt x 542.025pt>
 File: imagenes/figuras/feature_set_comparison_results.png Graphic file (type png)
 <use imagenes/figuras/feature_set_comparison_results.png>
 Package pdftex.def Info: imagenes/figuras/feature_set_comparison_results.png  used on input line 197.
@@ -1469,7 +1479,7 @@ LaTeX Info: Redefining \sptext on input line 324.
 LaTeX Info: Redefining \. on input line 324.
 LaTeX Info: Redefining \% on input line 324.
  [46]
-<imagenes/figuras/validation_scheme_100_partitions.png, id=1065, 1204.5pt x 1144.275pt>
+<imagenes/figuras/validation_scheme_100_partitions.png, id=1087, 1204.5pt x 1144.275pt>
 File: imagenes/figuras/validation_scheme_100_partitions.png Graphic file (type png)
 <use imagenes/figuras/validation_scheme_100_partitions.png>
 Package pdftex.def Info: imagenes/figuras/validation_scheme_100_partitions.png  used on input line 327.
@@ -1482,7 +1492,7 @@ Overfull \hbox (10.14417pt too wide) in paragraph at lines 340--341
 []\T1/cmr/m/n/12 Como ref-er-en-cia de con-traste, una re-gre-sión logís-ti-ca monolíti-ca que com-bi-nase metabolómi-
  []
 
-<imagenes/figuras/loo_cv_results.png, id=1072, 722.7pt x 303.534pt>
+<imagenes/figuras/loo_cv_results.png, id=1094, 722.7pt x 303.534pt>
 File: imagenes/figuras/loo_cv_results.png Graphic file (type png)
 <use imagenes/figuras/loo_cv_results.png>
 Package pdftex.def Info: imagenes/figuras/loo_cv_results.png  used on input line 348.
@@ -1491,7 +1501,7 @@ LaTeX Info: Redefining \sptext on input line 384.
 LaTeX Info: Redefining \. on input line 384.
 LaTeX Info: Redefining \% on input line 384.
 [48 <./imagenes/figuras/loo_cv_results.png>]
-<imagenes/figuras/error_analysis_results.png, id=1078, 809.424pt x 325.215pt>
+<imagenes/figuras/error_analysis_results.png, id=1100, 809.424pt x 325.215pt>
 File: imagenes/figuras/error_analysis_results.png Graphic file (type png)
 <use imagenes/figuras/error_analysis_results.png>
 Package pdftex.def Info: imagenes/figuras/error_analysis_results.png  used on input line 392.
@@ -1504,7 +1514,7 @@ LaTeX Info: Redefining \sptext on input line 458.
 LaTeX Info: Redefining \. on input line 458.
 LaTeX Info: Redefining \% on input line 458.
  [50]
-<imagenes/figuras/cascade_threshold_selection.png, id=1088, 534.798pt x 390.258pt>
+<imagenes/figuras/cascade_threshold_selection.png, id=1111, 534.798pt x 390.258pt>
 File: imagenes/figuras/cascade_threshold_selection.png Graphic file (type png)
 <use imagenes/figuras/cascade_threshold_selection.png>
 Package pdftex.def Info: imagenes/figuras/cascade_threshold_selection.png  used on input line 461.
@@ -1513,21 +1523,21 @@ LaTeX Info: Redefining \sptext on input line 498.
 LaTeX Info: Redefining \. on input line 498.
 LaTeX Info: Redefining \% on input line 498.
  [51 <./imagenes/figuras/cascade_threshold_selection.png>]
-LaTeX Info: Redefining \sptext on input line 534.
-LaTeX Info: Redefining \. on input line 534.
-LaTeX Info: Redefining \% on input line 534.
+LaTeX Info: Redefining \sptext on input line 515.
+LaTeX Info: Redefining \. on input line 515.
+LaTeX Info: Redefining \% on input line 515.
  [52]
 LaTeX Info: Redefining \sptext on input line 560.
 LaTeX Info: Redefining \. on input line 560.
 LaTeX Info: Redefining \% on input line 560.
  [53]
-LaTeX Info: Redefining \sptext on input line 636.
-LaTeX Info: Redefining \. on input line 636.
-LaTeX Info: Redefining \% on input line 636.
+LaTeX Info: Redefining \sptext on input line 629.
+LaTeX Info: Redefining \. on input line 629.
+LaTeX Info: Redefining \% on input line 629.
  [54]
-LaTeX Info: Redefining \sptext on input line 672.
-LaTeX Info: Redefining \. on input line 672.
-LaTeX Info: Redefining \% on input line 672.
+LaTeX Info: Redefining \sptext on input line 669.
+LaTeX Info: Redefining \. on input line 669.
+LaTeX Info: Redefining \% on input line 669.
  [55]
 LaTeX Info: Redefining \sptext on input line 719.
 LaTeX Info: Redefining \. on input line 719.
@@ -1537,7 +1547,7 @@ LaTeX Info: Redefining \sptext on input line 775.
 LaTeX Info: Redefining \. on input line 775.
 LaTeX Info: Redefining \% on input line 775.
  [57]
-<imagenes/figuras/cascade_performance_distribution.png, id=1128, 780.516pt x 317.988pt>
+<imagenes/figuras/cascade_performance_distribution.png, id=1150, 780.516pt x 317.988pt>
 File: imagenes/figuras/cascade_performance_distribution.png Graphic file (type png)
 <use imagenes/figuras/cascade_performance_distribution.png>
 Package pdftex.def Info: imagenes/figuras/cascade_performance_distribution.png  used on input line 786.
@@ -1546,7 +1556,7 @@ LaTeX Info: Redefining \sptext on input line 799.
 LaTeX Info: Redefining \. on input line 799.
 LaTeX Info: Redefining \% on input line 799.
  [58 <./imagenes/figuras/cascade_performance_distribution.png>]
-<imagenes/figuras/learning_curve.png, id=1134, 498.06075pt x 281.853pt>
+<imagenes/figuras/learning_curve.png, id=1156, 498.06075pt x 281.853pt>
 File: imagenes/figuras/learning_curve.png Graphic file (type png)
 <use imagenes/figuras/learning_curve.png>
 Package pdftex.def Info: imagenes/figuras/learning_curve.png  used on input line 832.
@@ -1559,7 +1569,7 @@ LaTeX Info: Redefining \sptext on input line 872.
 LaTeX Info: Redefining \. on input line 872.
 LaTeX Info: Redefining \% on input line 872.
  [60]
-<imagenes/figuras/prevalence_sensitivity_cascade.png, id=1144, 520.344pt x 332.1135pt>
+<imagenes/figuras/prevalence_sensitivity_cascade.png, id=1166, 520.344pt x 332.1135pt>
 File: imagenes/figuras/prevalence_sensitivity_cascade.png Graphic file (type png)
 <use imagenes/figuras/prevalence_sensitivity_cascade.png>
 Package pdftex.def Info: imagenes/figuras/prevalence_sensitivity_cascade.png  used on input line 877.
@@ -1572,7 +1582,7 @@ LaTeX Info: Redefining \sptext on input line 927.
 LaTeX Info: Redefining \. on input line 927.
 LaTeX Info: Redefining \% on input line 927.
  [62]
-<imagenes/figuras/biological_pathways.png, id=1156, 1044.90375pt x 507.0945pt>
+<imagenes/figuras/biological_pathways.png, id=1179, 1044.90375pt x 507.0945pt>
 File: imagenes/figuras/biological_pathways.png Graphic file (type png)
 <use imagenes/figuras/biological_pathways.png>
 Package pdftex.def Info: imagenes/figuras/biological_pathways.png  used on input line 930.
@@ -1581,9 +1591,9 @@ LaTeX Info: Redefining \sptext on input line 965.
 LaTeX Info: Redefining \. on input line 965.
 LaTeX Info: Redefining \% on input line 965.
  [63 <./imagenes/figuras/biological_pathways.png>])
-LaTeX Info: Redefining \sptext on input line 144.
-LaTeX Info: Redefining \. on input line 144.
-LaTeX Info: Redefining \% on input line 144.
+LaTeX Info: Redefining \sptext on input line 146.
+LaTeX Info: Redefining \. on input line 146.
+LaTeX Info: Redefining \% on input line 146.
  [64]
 \openout2 = `capitulos/5.conclusiones.aux'.
 
@@ -1601,34 +1611,34 @@ LaTeX Info: Redefining \sptext on input line 24.
 LaTeX Info: Redefining \. on input line 24.
 LaTeX Info: Redefining \% on input line 24.
  [66])
-LaTeX Info: Redefining \sptext on input line 145.
-LaTeX Info: Redefining \. on input line 145.
-LaTeX Info: Redefining \% on input line 145.
+LaTeX Info: Redefining \sptext on input line 147.
+LaTeX Info: Redefining \. on input line 147.
+LaTeX Info: Redefining \% on input line 147.
  [67]
-LaTeX Info: Redefining \sptext on input line 152.
-LaTeX Info: Redefining \. on input line 152.
-LaTeX Info: Redefining \% on input line 152.
+LaTeX Info: Redefining \sptext on input line 154.
+LaTeX Info: Redefining \. on input line 154.
+LaTeX Info: Redefining \% on input line 154.
  [68
 
 
 
 ]
-Overfull \hbox (20.25835pt too wide) in paragraph at lines 153--153
+Overfull \hbox (20.25835pt too wide) in paragraph at lines 155--155
 \T1/cmr/m/n/12 Alzheimer's dis-ease con-tin-u-um^^T. En: \T1/cmr/m/it/12 Alzheimer's & De-men-tia \T1/cmr/m/n/12 19.6 (2023), págs. 2682[]2699.
  []
 
 [69]
-Overfull \hbox (26.1653pt too wide) in paragraph at lines 153--153
+Overfull \hbox (26.1653pt too wide) in paragraph at lines 155--155
 \T1/cmr/m/it/12 Eng-land Jour-nal of Medicine \T1/cmr/m/n/12 365.19 (2011), págs. 1812[]1823. \T1/cmr/m/sc/12 doi\T1/cmr/m/n/12 : [][]$\T1/cmtt/m/n/12 10 . 1056 / NEJMra1104901$[][]\T1/cmr/m/n/12 . 
  []
 
-LaTeX Info: Redefining \sptext on input line 152.
-LaTeX Info: Redefining \. on input line 152.
-LaTeX Info: Redefining \% on input line 152.
+LaTeX Info: Redefining \sptext on input line 154.
+LaTeX Info: Redefining \. on input line 154.
+LaTeX Info: Redefining \% on input line 154.
 [70]
-LaTeX Info: Redefining \sptext on input line 160.
-LaTeX Info: Redefining \. on input line 160.
-LaTeX Info: Redefining \% on input line 160.
+LaTeX Info: Redefining \sptext on input line 162.
+LaTeX Info: Redefining \. on input line 162.
+LaTeX Info: Redefining \% on input line 162.
  [71]
 \openout2 = `apendice_ejemplo.aux'.
 
@@ -1641,7 +1651,20 @@ LaTeX Info: Redefining \% on input line 1.
 
 ]
 Ap\'{e}ndice A.
-) [73] (./Documento_maestro.aux (./otros/portada.aux)
+[73]
+LaTeX Info: Redefining \sptext on input line 44.
+LaTeX Info: Redefining \. on input line 44.
+LaTeX Info: Redefining \% on input line 44.
+ [74
+
+]
+Ap\'{e}ndice B.
+)
+Overfull \hbox (23.61314pt too wide) in paragraph at lines 52--162
+[]\T1/cmr/m/n/12 El repos-i-to-rio con-tiene el códi-go para la clasi-fi-cación de Alzheimer me-di-ante datos metabolómi-
+ []
+
+[75] (./Documento_maestro.aux (./otros/portada.aux)
 LaTeX Info: Redefining \sptext on input line 21.
 LaTeX Info: Redefining \. on input line 21.
 LaTeX Info: Redefining \% on input line 21.
@@ -1649,7 +1672,7 @@ LaTeX Info: Redefining \% on input line 21.
 LaTeX Info: Redefining \sptext on input line 4.
 LaTeX Info: Redefining \. on input line 4.
 LaTeX Info: Redefining \% on input line 4.
-) (./capitulos/1.introduccion.aux) (./capitulos/2.estado_del_arte.aux) (./capitulos/3.materiales_y_metodos.aux) (./capitulos/4.resultados.aux) (./capitulos/5.conclusiones.aux) (./apendice_ejemplo.aux))
+) (./otros/acronimos.aux) (./capitulos/1.introduccion.aux) (./capitulos/2.estado_del_arte.aux) (./capitulos/3.materiales_y_metodos.aux) (./capitulos/4.resultados.aux) (./capitulos/5.conclusiones.aux) (./apendice_ejemplo.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-05-26>
@@ -1659,7 +1682,7 @@ L3 programming layer <2026-05-26>
 LaTeX Warning: There were undefined references.
 
 Package rerunfilecheck Info: File `Documento_maestro.out' has not changed.
-(rerunfilecheck)             Checksum: 23F14B4954278F39982F29DEA4D944B6;24115.
+(rerunfilecheck)             Checksum: 4C969067E0DD2F5D7DAEAFD400892D7D;24417.
 
 Package biblatex Warning: Please (re)run Biber on the file:
 (biblatex)                Documento_maestro
@@ -1670,18 +1693,18 @@ Package logreq Info: Writing requests to 'Documento_maestro.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 42062 strings out of 469327
- 833415 string characters out of 5466078
- 1738085 words of memory out of 5000000
- 69961 multiletter control sequences out of 15000+600000
- 652020 words of font info for 97 fonts, out of 8000000 for 9000
+ 42101 strings out of 469327
+ 834307 string characters out of 5466078
+ 1740736 words of memory out of 5000000
+ 69985 multiletter control sequences out of 15000+600000
+ 652710 words of font info for 98 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  84i,13n,94p,2507b,2493s stack positions out of 10000i,1000n,20000p,200000b,200000s
- </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcbx1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbi1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0800.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0800.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2488.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc2488.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc1728.600pk></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Documento_maestro.pdf (89 pages, 2797504 bytes).
+ </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcbx1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbi1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0800.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0800.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecxc1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx2488.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1440.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc2488.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk> </home/ubuntu/.TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/eccc1728.600pk></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></home/ubuntu/.TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on Documento_maestro.pdf (93 pages, 2803967 bytes).
 PDF statistics:
- 2188 PDF objects out of 2487 (max. 8388607)
- 1273 compressed objects within 13 object streams
- 305 named destinations out of 1000 (max. 500000)
- 866 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 2233 PDF objects out of 2487 (max. 8388607)
+ 1305 compressed objects within 14 object streams
+ 312 named destinations out of 1000 (max. 500000)
+ 882 words of extra memory for PDF output out of 10000 (max. 10000000)
 
