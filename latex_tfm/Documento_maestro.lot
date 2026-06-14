@@ -1,0 +1,43 @@
+\babel@toc {spanish}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {spanish}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Características demográficas de la cohorte por grupo diagnóstico.}}{14}{table.caption.8}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Metabolitos residuales utilizados como variables de entrada del análisis.}}{16}{table.caption.9}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Resumen estructural de la matriz usada en el EDA.}}{17}{table.caption.10}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Restricciones muestrales del problema de clasificación.}}{20}{table.caption.11}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Distribución de clases en la cohorte final.}}{20}{table.caption.12}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Features ingenierizadas: criterio estadístico y biológico de selección.}}{27}{table.caption.13}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Páginas principales de la aplicación Streamlit y utilidad analítica.}}{37}{table.caption.14}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Síntesis cuantitativa del análisis exploratorio.}}{39}{table.caption.17}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Comparación de configuraciones lineales sobre la matriz completa de 20 variables, evaluadas con 200 particiones estratificadas 80/20.}}{42}{table.caption.20}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Configuraciones KNN evaluadas sobre la matriz completa de 20 variables, también bajo 200 particiones estratificadas 80/20.}}{42}{table.caption.21}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Configuraciones no lineales y de alta capacidad evaluadas sobre la matriz completa de 20 variables, con el mismo esquema de 200 particiones estratificadas 80/20.}}{43}{table.caption.22}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Variables retenidas con mayor estabilidad en el cribado L1 repetido.}}{43}{table.caption.23}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Comparación cuantitativa entre candidatos de panel metabolómico, todos reevaluados mediante SSS-200 con regresión logística regularizada.}}{44}{table.caption.25}%
+\contentsline {table}{\numberline {4.7}{\ignorespaces Benchmark de algoritmos sobre el panel consolidado de 11 variables, reevaluado mediante 200 holdouts estratificados 80/20.}}{45}{table.caption.26}%
+\contentsline {table}{\numberline {4.8}{\ignorespaces Resumen jerárquico de Balanced Accuracy según modelo y esquema de evaluación.}}{46}{table.caption.27}%
+\contentsline {table}{\numberline {4.9}{\ignorespaces Calibración y optimismo del modelo base 11f.}}{49}{table.caption.30}%
+\contentsline {table}{\numberline {4.10}{\ignorespaces Persistencia del error del modelo base por sujeto en 100 holdouts.}}{50}{table.caption.32}%
+\contentsline {table}{\numberline {4.11}{\ignorespaces Perfiles metabólicos medios de errores persistentes frente a casos bien clasificados (z-scores).}}{50}{table.caption.33}%
+\contentsline {table}{\numberline {4.12}{\ignorespaces Resumen del comportamiento del Stage 1 en la evaluación multi-seed. Los valores de $t_{lo}$ y $t_{hi}$ son medias de umbrales reaprendidos en cada una de las 100 particiones externas.}}{52}{table.caption.35}%
+\contentsline {table}{\numberline {4.13}{\ignorespaces Sensibilidad del Stage 1 a versiones más tolerantes de la restricción de errores extremos.}}{53}{table.caption.36}%
+\contentsline {table}{\numberline {4.14}{\ignorespaces Comparación de rendimiento del sistema cascada bajo diferentes regularizaciones del Stage 1.}}{53}{table.caption.37}%
+\contentsline {table}{\numberline {4.15}{\ignorespaces Resumen descriptivo de las variables clínicas candidatas para el Stage 2. En las variables binarias, la media equivale a la proporción observada en cada grupo.}}{54}{table.caption.38}%
+\contentsline {table}{\numberline {4.16}{\ignorespaces Cribado preliminar de bloques candidatos para el Stage 2 dentro de la subpoblación amarilla. Las BA son medias de RSKF $5\times 10$ en esa subpoblación.}}{55}{table.caption.39}%
+\contentsline {table}{\numberline {4.17}{\ignorespaces Chequeo exploratorio de ponderaciones de clase en el Stage 2 con $C=10$, realizado sobre 15 particiones externas adicionales.}}{55}{table.caption.40}%
+\contentsline {table}{\numberline {4.18}{\ignorespaces Comparación entre el sistema final de dos etapas y una logística monolítica con la misma información total, evaluadas sobre el mismo esquema externo.}}{56}{table.caption.41}%
+\contentsline {table}{\numberline {4.19}{\ignorespaces Comparación resumida de $C$ en el Stage 2 dentro del sistema completo, ya bajo la evaluación externa de 100 particiones.}}{57}{table.caption.42}%
+\contentsline {table}{\numberline {4.20}{\ignorespaces Rendimiento del sistema de dos etapas en la evaluación multi-seed sobre 100 particiones externas. En train se resume solo la BA interna, porque sensibilidad, especificidad y errores se interpretan aquí sobre el holdout externo.}}{57}{table.caption.43}%
+\contentsline {table}{\numberline {4.21}{\ignorespaces Comparación pareada entre Stage 1 solo y el sistema completo de dos etapas sobre las mismas 100 particiones externas. Se reportan mediana e IQR porque la distribución de mejoras no es estrictamente gaussiana.}}{57}{table.caption.44}%
+\contentsline {table}{\numberline {4.22}{\ignorespaces Alternativas exploradas bajo la misma lógica de evaluación repetida y decisión metodológica final.}}{60}{table.caption.46}%
+\contentsline {table}{\numberline {4.23}{\ignorespaces Lectura operativa media del sistema de dos etapas en test, sobre un holdout externo de 30 pacientes con la mezcla observada en la cohorte.}}{61}{table.caption.48}%
+\contentsline {table}{\numberline {4.24}{\ignorespaces Escenarios clínicos hipotéticos por cada 1000 pacientes, derivados de la sensibilidad y especificidad globales medias del sistema final. No representan el circuito operativo completo de zonas verde, amarilla y roja.}}{62}{table.caption.50}%
+\contentsline {table}{\numberline {4.25}{\ignorespaces Síntesis biológica del panel metabolómico final: metabolitos seleccionados, dirección, ejes fisiopatológicos y lectura clínica.}}{63}{table.caption.52}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Metabolitos base seleccionados por \textit {stability selection} y \textit {forward selection}.}}{73}{table.caption.54}%
+\contentsline {table}{\numberline {A.2}{\ignorespaces Features ingenierizadas a partir de los metabolitos base.}}{73}{table.caption.55}%

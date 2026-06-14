@@ -1,0 +1,16 @@
+\noindent \begin{center}
+\section*{Resumen}
+\par\end{center}
+
+Este trabajo aborda el problema de discriminar la enfermedad de Alzheimer (AD) frente a controles cognitivamente normales (NC) mediante metabolómica plasmática en un contexto clínico de tamaño muestral limitado. Más allá de optimizar el rendimiento de un clasificador, el estudio investiga los límites intrínsecos de la predicción metabolómica y evalúa si una formulación alternativa refleja mejor el proceso real de decisión clínica.
+
+Se analiza una cohorte de 148 sujetos del consorcio TARCC (89 AD, 59 NC) mediante un pipeline parsimonioso basado en regresión logística regularizada, selección de variables guiada por estabilidad e ingeniería de \textit{features} con motivación biológica. Aunque el modelo resultante alcanza un rendimiento discriminativo competitivo, el análisis detallado de errores muestra un subgrupo de pacientes con perfiles metabolómicos solapados, generando una ambigüedad persistente que no se resuelve solo aumentando la complejidad del modelo.
+
+A partir de esta observación, el problema se reformula como un sistema de triaje clínico en dos etapas. En este marco, el modelo metabolómico identifica regiones de alta confianza y una zona explícita de incertidumbre, mientras que un segundo modelo integra variables clínicas para resolver los casos ambiguos. Este enfoque mejora de forma consistente el rendimiento en evaluación externa pareada, elevando la Balanced Accuracy en test de 0,850 (Stage 1 solo) a 0,910 (sistema de dos etapas) y mejorando de forma notable la sensibilidad.
+
+La principal contribución del trabajo es demostrar que la aportación no es maximizar BA, sino mostrar que la incertidumbre debe modelarse explícitamente. El reto no es solo algorítmico, sino estructural: una clasificación binaria plana resulta insuficiente para capturar la ambigüedad inherente del problema clínico. Al modelar explícitamente esa incertidumbre con una arquitectura orientada a triaje, la propuesta representa mejor el proceso de decisión real y mejora la utilidad práctica del sistema.
+
+\vspace{0.5cm}
+\begin{flushleft}
+\textbf{Palabras clave}: enfermedad de Alzheimer, metabolómica plasmática, biomarcadores, aprendizaje automático, regresión logística, triaje clínico, selección de variables, validación robusta
+\end{flushleft}

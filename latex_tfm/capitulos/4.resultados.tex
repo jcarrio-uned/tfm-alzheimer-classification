@@ -1,0 +1,970 @@
+\chapter{Resultados}\label{chap:resultados}
+
+Este capítulo presenta los hallazgos siguiendo la misma lógica analítica que estructuró el estudio. Primero se expone qué reveló el análisis exploratorio sobre la naturaleza de la señal. Después se detallan la construcción del modelo base y el comportamiento de sus distintas representaciones. A continuación se analizan los errores del clasificador binario para explicar por qué la formulación inicial resulta insuficiente. Finalmente se evalúa la reformulación en un sistema de dos etapas con activación condicional, su robustez y una proyección clínica simplificada de su rendimiento global.
+
+% ============================================================
+\section{EDA: señal real, pero distribuida y con solapamiento}\label{sec:eda}
+
+El análisis exploratorio mostró desde el inicio que el problema no era ni vacío ni trivial. El panel residualizado contiene señal discriminativa entre AD y NC, pero esa señal no se concentra en un biomarcador único ni genera una separación geométrica limpia entre clases.
+
+\begin{table}[ht]
+\centering
+\caption{Síntesis cuantitativa del análisis exploratorio.}
+\label{tab:eda_synthesis_results}
+\begin{tabular}{ll}
+\hline
+\textbf{Elemento} & \textbf{Resultado} \\
+\hline
+Sujetos y variables & 148 sujetos, 20 metabolitos residualizados \\
+Valores perdidos & 0 \\
+EPV (clase minoritaria / variables) & 3,0 \\
+Variables con normalidad no rechazada & 19/20 \\
+Pares con $|r|\geq 0{,}7$ & 0 \\
+Varianza explicada por PCA1 / PCA2 & 14,15\% / 9,09\% \\
+Sujetos con outlier por $|z|>3$ & 8 \\
+Sujetos detectados por $3\times IQR$ & 0 \\
+Mayor tamaño de efecto positivo & PC.aa.C40:4 ($d = 0{,}747$) \\
+Mayor tamaño de efecto negativo & DOPA ($d = -0{,}703$) \\
+\hline
+\end{tabular}
+\end{table}
+
+La primera lectura del problema es bastante nítida. La ausencia de valores perdidos y la regularidad distribucional de
+la mayoría de las variables favorecen el uso de un modelo lineal regularizado. A la vez, el bajo EPV y el reparto de la
+varianza multivariante dejan claro que aquí no basta una regla sencilla basada en una o dos variables.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.82\textwidth]{imagenes/figuras/top_effect_sizes.png}
+\caption{Metabolitos con mayor tamaño de efecto absoluto en la comparación AD frente a NC.}
+\label{fig:top_effect_sizes_results}
+\end{figure}
+
+La señal univariante se concentra en un grupo relativamente compacto de metabolitos, encabezado por PC.aa.C40:4, DOPA,
+Cer(d18:1/20:0), TG(18:2\_38:5), lysoPC.a.C18:2 y DHEAS. Eso justifica el esfuerzo de modelado posterior, pero no
+autoriza una lectura simplista del problema: incluso los mejores tamaños de efecto se mueven en un rango moderado-alto,
+no en uno de separación casi perfecta.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.80\textwidth]{imagenes/figuras/pca_scatter.png}
+\caption{Proyección PCA sobre los dos primeros componentes principales.}
+\label{fig:pca_results}
+\end{figure}
+
+\FloatBarrier
+
+La proyección PCA refuerza la misma idea desde una perspectiva multivariante. Las clases tienden a separarse, pero
+siguen compartiendo una región de solapamiento visible. Ahí está, en realidad, una de las claves de todo el trabajo:
+obliga a pensar el modelo en términos probabilísticos y sugiere que una parte de la ambigüedad quizá no se reduzca solo
+añadiendo complejidad algorítmica.
+
+El análisis de valores extremos reforzó esta idea. Detectar 8 sujetos con al menos un valor extremo por Z-score y ninguno bajo un criterio conservador de $3\times IQR$ sugiere que existen observaciones alejadas, pero no pacientes espurios que deban eliminarse sin más. Por eso se optó por winsorización en entrenamiento y no por exclusión de sujetos. Esta decisión adquiere especial importancia después, porque los casos difíciles del estudio no se explican por patología estadística de la muestra, sino por ambigüedad biológica real.
+
+% ============================================================
+\section{Comparación inicial entre familias de modelos}\label{sec:familias_modelo}
+
+Antes de reducir el panel metabolómico conviene fijar una referencia sobre la matriz completa de 20 variables, porque la
+elección de la familia del clasificador condiciona todo lo que viene después. La comparación no se planteó como una
+competición abstracta entre algoritmos, sino como una prueba de compatibilidad entre cada familia y las restricciones
+reales de la cohorte, donde el tamaño muestral es limitado, el EPV es bajo y una parte relevante del trabajo depende de
+la estabilidad de las probabilidades generadas.
+
+La primera lectura es la de la familia lineal. La pauta es nítida, porque la regresión logística regularizada mantiene
+el mejor equilibrio entre rendimiento fuera de muestra y control del gap, mientras que el SVM lineal reproduce una
+geometría parecida sin aportar una mejora consistente.
+
+\begin{table}[ht]
+\centering
+\caption{Comparación de configuraciones lineales sobre la matriz completa de 20 variables, evaluadas con 200 particiones estratificadas 80/20.}
+\label{tab:modelos_lineales}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Modelo} & \textbf{BA test} & \textbf{DE} & \textbf{BA train} & \textbf{Gap} & \textbf{AUC} \\
+\hline
+LogReg ($C=0{,}01$) & 0,788 & 0,065 & 0,863 & 0,075 & 0,874 \\
+LogReg ($C=0{,}1$) & 0,777 & 0,068 & 0,890 & 0,113 & 0,869 \\
+LogReg ($C=1{,}0$) & 0,763 & 0,072 & 0,898 & 0,135 & 0,858 \\
+SVM lineal ($C=0{,}1$) & 0,763 & 0,073 & 0,875 & 0,111 & 0,855 \\
+SVM lineal ($C=1{,}0$) & sin mejora consistente & --- & --- & --- & --- \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+A medida que la regularización de la regresión logística se relaja, el modelo gana capacidad dentro del entrenamiento,
+pero empeora fuera de muestra. No aparece, por tanto, un beneficio oculto en esa complejidad adicional. El mejor BA de
+esta familia se obtiene con regularización fuerte, lo que ya sugiere que el problema está gobernado más por la varianza
+que por el sesgo.
+
+KNN ofrece un contraste útil por una razón casi opuesta. Su gap es más contenido, aunque eso no refleja una
+generalización superior, sino una capacidad discriminante más modesta. El clasificador suaviza la frontera y evita una
+parte del sobreajuste, pero lo hace al precio de perder BA test y de producir probabilidades menos estables para el uso
+clínico posterior.
+
+\begin{table}[ht]
+\centering
+\caption{Configuraciones KNN evaluadas sobre la matriz completa de 20 variables, también bajo 200 particiones estratificadas 80/20.}
+\label{tab:modelos_knn}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Modelo} & \textbf{BA test} & \textbf{DE} & \textbf{BA train} & \textbf{Gap} & \textbf{AUC} \\
+\hline
+KNN ($k=5$) & 0,753 & 0,069 & 0,833 & 0,079 & 0,827 \\
+KNN ($k=7$) & 0,761 & 0,066 & 0,828 & 0,068 & 0,847 \\
+KNN ($k=11$) & 0,753 & 0,066 & 0,808 & 0,055 & 0,851 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La tercera lectura es todavía más clara. Las familias no lineales de alta capacidad, desde SVM-RBF hasta MLP,
+Random Forest \parencite{breiman2001random} o Gradient Boosting, alcanzan un ajuste casi perfecto en training y, sin embargo, se deterioran de forma
+marcada al salir del entrenamiento. Lo relevante aquí no es que necesiten un ajuste fino, sino que entran demasiado
+pronto en un régimen de memorización.
+
+\begin{table}[ht]
+\centering
+\caption{Configuraciones no lineales y de alta capacidad evaluadas sobre la matriz completa de 20 variables, con el mismo esquema de 200 particiones estratificadas 80/20.}
+\label{tab:modelos_nolineales}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Modelo} & \textbf{BA test} & \textbf{DE} & \textbf{BA train} & \textbf{Gap} & \textbf{AUC} \\
+\hline
+SVM-RBF ($C=1$) & 0,754 & 0,071 & 0,976 & 0,222 & 0,863 \\
+SVM-RBF ($C=10$) & 0,734 & 0,064 & 1,000 & 0,266 & 0,849 \\
+MLP (50,25) & 0,750 & 0,068 & 1,000 & 0,250 & 0,838 \\
+MLP (100) & 0,744 & 0,069 & 1,000 & 0,256 & 0,850 \\
+Random Forest (50, d=5) & 0,727 & 0,073 & 1,000 & 0,273 & 0,841 \\
+Random Forest (100) & 0,723 & 0,071 & 1,000 & 0,277 & 0,851 \\
+Gradient Boosting (100) & 0,716 & 0,074 & 1,000 & 0,284 & 0,822 \\
+Gradient Boosting (50, d=2) & 0,699 & 0,072 & 1,000 & 0,300 & 0,802 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+El mensaje de conjunto es coherente con lo que ya sugería el EDA. En esta cohorte, la complejidad adicional no compra
+estructura útil, sino optimismo aparente. Esa es la razón por la que el bloque binario del trabajo se apoya finalmente
+en una regresión logística regularizada, no por preferencia estética, sino porque es la familia que mejor resiste el
+paso de training a test bajo las restricciones reales de la muestra.
+
+% ============================================================
+\section{Selección de variables y construcción del modelo binario base}\label{sec:seleccion}
+
+La construcción del modelo base se apoyó en una secuencia de reducción y refinamiento cuyo objetivo no era únicamente maximizar una métrica, sino equilibrar señal, parsimonia y estabilidad. El paso de los 20 metabolitos iniciales a un panel compacto se hizo en tres fases: núcleo estable, recuperación de señal complementaria y consolidación final del panel de Stage 1.
+
+\begin{table}[ht]
+\centering
+\caption{Variables retenidas con mayor estabilidad en el cribado L1 repetido.}
+\label{tab:stability_results}
+\begin{tabular}{lc}
+\hline
+\textbf{Variable} & \textbf{Frecuencia de selección} \\
+\hline
+DOPA & 100,0\% \\
+lysoPC.a.C18:2 & 100,0\% \\
+PC.aa.C40:4 & 99,5\% \\
+TG(18:2\_38:5) & 95,0\% \\
+DHEAS & 90,5\% \\
+Cer(d18:1/20:0) & 89,0\% \\
+\hline
+\end{tabular}
+\end{table}
+
+El cribado inicial deja una idea bastante tranquilizadora: el problema no depende de una combinación accidental de
+variables, sino de un pequeño núcleo de metabolitos que reaparece con mucha frecuencia cuando cambia la partición. Esa
+estabilidad es uno de los argumentos más sólidos a favor de la robustez del panel final.
+
+Sobre ese núcleo, la forward selection recuperó tres variables cuya frecuencia de selección era insuficiente para entrar
+por estabilidad pura, pero que sí añadían información útil cuando se evaluaban junto al bloque robusto. La secuencia fue
+coherente con la lectura del capítulo 3, primero se añadió Arg, después CE(22:5) y, por último,
+HexCer(d18:1/26:1), con lo que el panel base pasó de 6 a 9 metabolitos antes de abrir la fase de ingeniería.
+
+No obstante, estabilidad y panel definitivo no son exactamente lo mismo. El trabajo posterior de forward selection e ingeniería de variables generó varios candidatos razonables. La comparación final entre ellos se resume en la Figura~\ref{fig:feature_sets_results} y en la Tabla~\ref{tab:feature_sets_results}.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.86\textwidth]{imagenes/figuras/feature_set_comparison_results.png}
+\caption{Comparación entre candidatos de panel y panel S1 consolidado.}
+\label{fig:feature_sets_results}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{Comparación cuantitativa entre candidatos de panel metabolómico, todos reevaluados mediante SSS-200 con regresión logística regularizada.}
+\label{tab:feature_sets_results}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Conjunto} & \textbf{$n$} & \textbf{BA test} & \textbf{Desv.} & \textbf{AUC} & \textbf{Gap} \\
+\hline
+Núcleo estable (6) & 6 & 0,772 & 0,069 & 0,873 & 0,043 \\
+Selección metabolómica (9) & 9 & 0,827 & 0,060 & 0,882 & 0,029 \\
+Panel ampliado con 4 ingenierizadas (13) & 13 & 0,848 & 0,062 & 0,912 & 0,025 \\
+Tras retirar TG (12) & 12 & 0,848 & 0,061 & 0,915 & 0,025 \\
+Panel S1 consolidado (11) & 11 & 0,863 & 0,057 & 0,911 & 0,015 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La principal fuente de confusión potencial en esta fase es la diferencia entre el panel ampliado automático y el panel
+S1 consolidado. El primero alcanza 13 variables porque conserva los 9 metabolitos del forward y añade 4 features
+ingenierizadas. A partir de ahí, la depuración elimina primero TG(18:2\_38:5), con BA prácticamente idéntica y AUC
+ligeramente mejor, y después CE(22:5), paso que produce la mejora decisiva de BA y gap hasta el panel final de 11
+variables. Por eso el candidato automático no coincide con el mejor panel final. El criterio de selección definitivo no fue solo
+crecimiento secuencial de BA, sino robustez global de la representación. En ese sentido, la cifra de BA = 0,863 del
+panel S1 consolidado coincide, dentro del redondeo, con su reevaluación posterior mediante holdout repetido como
+baseline del sistema.
+
+Las cuatro variables ingenierizadas retenidas fueron un ratio DHEAS/lysoPC, dos productos, DOPA $\times$ DHEAS y
+PC.aa.C40:4 $\times$ DOPA, además del ratio DHEAS/Cer20. No deben leerse como un añadido ornamental, porque son las
+relaciones que permiten reordenar la señal del bloque metabolómico sin necesidad de recurrir a familias no lineales más
+inestables.
+
+Una vez fijado el panel S1 consolidado, la comparación entre familias de modelos vuelve a apuntar en la misma dirección que el EDA: la familia adecuada es lineal.
+
+\begin{table}[ht]
+\centering
+\caption{Benchmark de algoritmos sobre el panel consolidado de 11 variables, reevaluado mediante 200 holdouts estratificados 80/20.}
+\label{tab:model_benchmark_results}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Modelo} & \textbf{BA} & \textbf{Desv.} & \textbf{Sens.} & \textbf{Spec.} & \textbf{AUC} \\
+\hline
+LogReg ($C=0{,}1$) & 0,863 & 0,057 & 0,868 & 0,858 & 0,911 \\
+SVM lineal & 0,859 & 0,057 & 0,851 & 0,867 & 0,913 \\
+SVM RBF & 0,776 & 0,072 & 0,870 & 0,682 & 0,851 \\
+Random Forest & 0,734 & 0,074 & 0,878 & 0,590 & 0,842 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Aquí la conclusión es bastante limpia: los dos mejores modelos son lineales. Lo importante no es solo la pequeña
+ventaja media de la regresión logística, sino el patrón completo. Las alternativas más flexibles mantienen o incluso
+fuerzan sensibilidad alta, pero lo hacen a costa de especificidad y variabilidad. En este tamaño muestral, la
+complejidad adicional compra optimismo, no estructura útil.
+
+% ============================================================
+\section{Rendimiento del clasificador binario base}\label{sec:rendimiento}
+
+Con el panel de 11 variables ya fijado y la regularización $C=0{,}1$, el modelo base alcanza un rendimiento sólido y coherente con la narrativa metodológica del trabajo. La cuestión no es si funciona, sino cómo de bien funciona, dónde concentra su incertidumbre y cuánto optimismo arrastra su ajuste.
+
+Antes de entrar en las cifras concretas conviene fijar solo tres marcos de lectura, porque aquí conviven varias
+Balanced Accuracies que responden a preguntas distintas. La BA = 0,863 $\pm$ 0,057 corresponde al modelo metabolómico
+standalone reevaluado con 200 holdouts estratificados 80/20 y sirve como referencia global del clasificador base durante
+la fase de desarrollo. La BA = 0,873 y el AUC = 0,908 proceden del LOO-CV sobre la cohorte completa y permiten leer al
+mismo modelo como validación sujeto a sujeto fuera de muestra. Más adelante, cuando se compare el sistema de dos etapas
+con su baseline directo, la referencia metodológicamente correcta pasa a ser la BA = 0,850 $\pm$ 0,057 del Stage 1 solo
+bajo las mismas 100 particiones externas. El motivo es de comparabilidad: en esa evaluación externa se reestiman en cada
+seed los umbrales del Stage 1 y el entrenamiento del Stage 2 dentro del training fold, y ambos se aplican después al
+mismo holdout. Usar 0,863 en esa comparación mezclaría protocolos distintos (SSS-200 de desarrollo frente a SSS-100
+externo pareado) y podría introducir una lectura sesgada del efecto real del segundo escalón. La cifra preliminar BA =
+0,910 $\pm$ 0,019 del Stage 2 se interpretará aparte, porque solo compara bloques candidatos dentro de la zona amarilla y no el
+sistema global.
+
+\begin{table}[ht]
+\centering
+\caption{Resumen jerárquico de Balanced Accuracy según modelo y esquema de evaluación.}
+\label{tab:ba_summary_hierarchy}
+\small
+\setlength{\tabcolsep}{6pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llc}
+\hline
+\textbf{Modelo / Sistema} & \textbf{Esquema de evaluación} & \textbf{BA principal} \\
+\hline
+\multicolumn{3}{l}{\textit{\textbf{Fase de desarrollo (modelo metabolómico base)}}} \\
+\hline
+Modelo base (11 variables) & Stratified Shuffle Split, 200 particiones 80/20 & 0,863 $\pm$ 0,057 \\
+Modelo base (11 variables) & RSKF 5$\times$10 & 0,849 $\pm$ 0,082 \\
+Modelo base (11 variables) & LOO-CV, cohorte completa & 0,873 \\
+\hline
+\multicolumn{3}{l}{\textit{\textbf{Fase de validación (sistema de dos etapas)}}} \\
+\hline
+Stage 1 (metabolómico solo) & 100 particiones externas 80/20 & 0,850 $\pm$ 0,057 \\
+Stage 2 (clínico solo) & RSKF 5$\times$10, subpoblación amarilla & 0,910 $\pm$ 0,019 \\
+Stage 1 + Stage 2 (sistema completo) & 100 particiones externas 80/20 & 0,910 $\pm$ 0,051 \\
+\hline
+\multicolumn{3}{l}{\textit{\textbf{Referencia: alternativa monolítica}}} \\
+\hline
+Logística monolítica (metabolómica + clínica) & 100 particiones externas 80/20 & 0,930 $\pm$ 0,045 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La validación del trabajo se organizó en cuatro niveles complementarios, cada uno respondiendo a una pregunta específica sobre la robustez y utilidad del sistema.
+
+\textbf{Primero}, durante la fase de desarrollo del modelo metabolómico base, se utilizó Stratified Shuffle Split con 200 particiones estratificadas 80/20 (SSS-200) para comparar familias de modelos, seleccionar variables e incorporar features ingenierizadas. Este esquema permitió observar la variabilidad del rendimiento bajo diferentes composiciones del entrenamiento. El resultado fue \textbf{BA = 0,863 $\pm$ 0,057}, que establece la línea base del clasificador binario puro.
+
+\textbf{Segundo}, el clasificador binario final se evaluó mediante Leave-One-Out Cross-Validation (LOO-CV) como validación primaria sujeto-a-sujeto, garantizando que cada individuo fuese evaluado con un modelo entrenado sin él. Este esquema proporciona una estimación no sesgada de la generalización a nivel individual. El resultado fue \textbf{BA = 0,873}, con AUC = 0,908 y valores de PPV = 0,917 y NPV = 0,813, confirmando la estabilidad del modelo base.
+
+\textbf{Tercero}, se empleó una validación estratificada 10-fold repetida 5 veces (50 evaluaciones en total) como contraste de consistencia entre esquemas de remuestreo. Este paso verificó que los resultados del modelo base no fuesen artefactos del esquema LOO-CV específico, sino estables bajo particiones más convencionales.
+
+\textbf{Finalmente}, el sistema completo de dos etapas se evaluó sobre 100 particiones externas independientes (SSS-100). En cada una de esas particiones, el flujo fue: (a) dentro del training set (80\%, aproximadamente 118 sujetos), estimar los umbrales $t_{lo}$ y $t_{hi}$ del Stage 1, entrenar el Stage 2 solo sobre casos amarillos y ajustar la regularización; (b) aplicar el sistema calibrado al holdout externo (20\%, 30 sujetos), nunca visto durante esa estimación. Este esquema simula una situación clínica más realista, donde cada despliegue del sistema recalibra con su propia cohorte de entrenamiento.
+
+Para facilitar la lectura del protocolo, la Figura~\ref{fig:validation_scheme_100_partitions} resume el flujo ejecutado en cada una de las 100 particiones: en cada iteración se reaprendió la calibración interna del Stage 1 (sobre 118 sujetos) y se entrenó el Stage 2 (sobre los amarillos de ese training), evaluándose finalmente ambos en los 30 sujetos del holdout externo correspondiente. Este diseño garantiza comparabilidad estricta entre Stage 1 y sistema completo al evaluarlos sobre las mismas particiones.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.90\textwidth]{imagenes/figuras/validation_scheme_100_partitions.png}
+\caption{Esquema de validación externa en 100 particiones para el sistema de dos etapas. Cada partición reaprende Stage 1 y Stage 2 dentro de su training fold y evalúa el rendimiento final sobre su holdout externo.}
+\label{fig:validation_scheme_100_partitions}
+\end{figure}
+
+Los resultados fueron:
+\begin{itemize}
+    \item \textbf{Stage 1 solo}: BA = 0,850 $\pm$ 0,057 (metabolómica aislada, con gestión explícita de incertidumbre)
+    \item \textbf{Stage 1 + Stage 2}: BA = 0,910 $\pm$ 0,051 (sistema completo, con reclasificación clínica de ambiguos)
+\end{itemize}
+
+La mejora de +6,0 puntos porcentuales de BA al añadir el Stage 2 es estadísticamente significativa: un test de rangos con signo de Wilcoxon aplicado sobre las 100 diferencias pareadas arroja $W = 3975{,}5$, $p < 0{,}001$ (correlación biserial por rangos $r = 0{,}55$). En 74 de las 100 particiones el sistema completo superó al Stage 1 solo, y solo en 19 ocurrió lo contrario.
+
+Como referencia de contraste, una regresión logística monolítica que combinase metabolómica y variables clínicas directamente en un modelo único alcanzaría BA = 0,930 $\pm$ 0,045 sobre las mismas 100 particiones. Sin embargo, esa arquitectura sacrifica interpretabilidad y gestión explícita de la incertidumbre, dos elementos clínicamente relevantes. El trade-off final prioriza la explicitación de dónde hay ambigüedad sobre la maximización de una métrica única.
+
+En conjunto, el modelo base ya resulta defendible por sí mismo: bajo LOO-CV alcanza BA = 0,873 con AUC = 0,908, PPV = 0,917 y NPV = 0,813, mientras que el holdout repetido sitúa la BA en 0,863 $\pm$ 0,057 con rango P5--P95 de 0,764--0,958. El clasificador es especialmente fiable cuando clasifica positivo, pero conserva un margen de incertidumbre suficiente como para no justificar una decisión clínica binaria uniforme para toda la cohorte.
+
+No se plantea aquí una comparación métrica directa con el trabajo de referencia de Bernal et al. \parencite{bernal2025metabolomics}, porque cambian el panel retenido, la lógica de selección, el esquema de validación y la propia formulación del problema. La relación entre ambos trabajos debe leerse en términos de continuidad analítica sobre la misma base residualizada, no como una competición limpia entre cifras de rendimiento.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{imagenes/figuras/loo_cv_results.png}
+\caption{Curva ROC y distribución de probabilidades del modelo base bajo LOO-CV.}
+\label{fig:loo_results}
+\end{figure}
+
+La curva ROC y la distribución de probabilidades dejan una idea bastante clara. El AUC es alto, pero sigue existiendo
+una franja central en la que AD y NC comparten un rango parecido de probabilidades. Esa región de solapamiento es la
+clave de todo lo que viene después: el modelo base no se equivoca por falta de señal, sino porque una parte de la
+cohorte no admite una decisión categórica fuerte con la misma confianza que los extremos.
+
+La validación también permite cuantificar el optimismo y la calibración del modelo, dos propiedades esenciales antes de reutilizar sus probabilidades como puntuaciones de confianza.
+
+\begin{table}[ht]
+\centering
+\caption{Calibración y optimismo del modelo base 11f.}
+\label{tab:base_calibration_results}
+\begin{tabular}{lcc}
+\hline
+\textbf{Indicador} & \textbf{Valor} & \textbf{Lectura} \\
+\hline
+AUC aparente & 0,937 & Ajuste sobre la cohorte completa \\
+AUC LOO-CV & 0,908 & Validación fuera de muestra \\
+Optimismo en AUC & 0,030 & Magnitud contenida \\
+BA aparente & 0,887 & Ajuste sobre la cohorte completa \\
+BA LOO-CV & 0,873 & Validación fuera de muestra \\
+Optimismo en BA & 0,014 & Bajo \\
+Brier score & 0,124 & Calibración razonable \\
+ECE & 0,107 & Desajuste moderado, no severo \\
+\hline
+\end{tabular}
+\end{table}
+
+Lo importante aquí es que el modelo base no parece una ilusión de entrenamiento. Su optimismo es pequeño y la
+calibración, aunque no perfecta, resulta suficiente para usar la probabilidad como medida operativa de confianza. Esa es
+la pieza que permite pasar del clasificador binario al problema de triaje sin forzar metodológicamente la salida
+probabilística.
+
+% ============================================================
+\section{Análisis de errores y límites de la formulación binaria}\label{sec:errores}
+
+El análisis de errores muestra con bastante claridad dónde deja de ser suficiente la formulación binaria. El interés aquí no está solo en contar cuántos errores hay, sino en entender si esos errores se comportan como ruido inespecífico, como casos frontera o como sujetos con perfiles metabólicos persistentemente ambiguos.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\textwidth]{imagenes/figuras/error_analysis_results.png}
+\caption{Distribución de probabilidades por tipo de resultado y persistencia del error por sujeto.}
+\label{fig:error_analysis_results}
+\end{figure}
+
+La figura de errores deja dos impresiones muy nítidas. La primera es que los falsos negativos y los falsos positivos se
+concentran en rangos intermedios o moderadamente discordantes de probabilidad, no en extremos completamente aberrantes.
+La segunda es que la persistencia del error por sujeto no es homogénea: la mayoría de las muestras son fáciles, pero
+existe un subgrupo de errores recurrentes que aparece una y otra vez.
+
+\begin{table}[ht]
+\centering
+\caption{Persistencia del error del modelo base por sujeto en 100 holdouts.}
+\label{tab:error_bands}
+\begin{tabular}{lcc}
+\hline
+\textbf{Banda de error} & \textbf{Sujetos} & \textbf{Porcentaje} \\
+\hline
+Error $\leq 10\%$ & 118 & 79,7\% \\
+Error 10--40\% & 9 & 6,1\% \\
+Error 40--80\% & 4 & 2,7\% \\
+Error $\geq 80\%$ & 17 & 11,5\% \\
+\hline
+\end{tabular}
+\end{table}
+
+Empieza a dibujarse una estructura casi bimodal del problema. Cerca del 80\% de los sujetos se clasifican correctamente
+de forma muy consistente, mientras que un 11,5\% presenta error persistente alto. Este patrón dice más que una simple
+tasa media de error, porque sugiere que el límite del modelo no está repartido uniformemente por toda la cohorte, sino
+concentrado en una tipología concreta de sujetos difíciles.
+
+\begin{table}[ht]
+\centering
+\caption{Perfiles metabólicos medios de errores persistentes frente a casos bien clasificados (z-scores).}
+\label{tab:error_profiles}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\hline
+\textbf{Metabolito} & \textbf{FN persistentes} & \textbf{AD bien clasificados} & \textbf{FP persistentes} & \textbf{NC bien clasificados} \\
+\hline
+DOPA & +0,77 & $-$0,44 & +0,16 & +0,43 \\
+PC.aa.C40:4 & $-$0,14 & +0,37 & +0,45 & $-$0,55 \\
+Cer(d18:1/20:0) & $-$0,18 & +0,41 & +0,27 & $-$0,48 \\
+lysoPC.a.C18:2 & +0,12 & +0,30 & $-$0,06 & $-$0,49 \\
+DHEAS & +0,25 & $-$0,25 & $-$0,26 & +0,36 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+El contraste metabólico entre casos persistentes y bien clasificados resulta especialmente revelador. Los falsos
+negativos persistentes muestran un patrón claramente menos AD-like que los AD bien clasificados: DOPA pasa de valores
+negativos esperables en AD a valores positivos, y PC.aa.C40:4, Cer20 y DHEAS invierten parcialmente el signo esperado.
+Los falsos positivos persistentes muestran la inversión complementaria. Dicho de forma más simple, el modelo no parece
+equivocarse al azar; clasifica como ve. Eso sugiere que una parte del error es \textbf{difícil de reducir con la señal
+biológica actualmente disponible}, incluso aunque pudieran existir mejoras marginales con otros enfoques o con cohortes
+más amplias.
+
+Desde el punto de vista de la narrativa global del TFM, esta sección cumple una función crítica. No se limita a mostrar que el clasificador binario comete errores, sino que explica por qué esos errores son estructuralmente distintos del ruido. Ese es el punto en el que la clasificación plana deja de ser suficiente y aparece la necesidad de una reformulación como triaje.
+
+% ============================================================
+\section{De clasificación a triaje: un sistema de dos etapas con activación condicional}\label{sec:cascade}
+
+La reformulación surge directamente del bloque anterior. El modelo base no se abandona; se reutiliza de una forma más coherente con la estructura real del problema. Su salida probabilística deja de interpretarse como una etiqueta única y pasa a servir para delimitar regiones de alta confianza y una zona explícita de ambigüedad.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.86\textwidth]{imagenes/figuras/cascade_threshold_selection.png}
+\caption{Selección de umbrales del Stage 1 bajo restricciones de error extremo nulo. La figura ilustra la lógica de búsqueda dentro del training set antes de aplicar el sistema de dos etapas al holdout externo.}
+\label{fig:cascade_results_thresholds}
+\end{figure}
+
+La lógica del cambio puede expresarse de forma muy simple. El problema ya no es ``qué umbral único clasifica mejor'',
+sino ``qué subconjunto de pacientes puede resolverse directamente sin incurrir en errores extremos clínicamente
+inaceptables''. La zona amarilla deja de ser un residuo incómodo y pasa a convertirse en una pieza metodológica del
+sistema.
+
+\begin{table}[ht]
+\centering
+\caption{Resumen del comportamiento del Stage 1 en la evaluación multi-seed. Los valores de $t_{lo}$ y $t_{hi}$ son medias de umbrales reaprendidos en cada una de las 100 particiones externas.}
+\label{tab:stage1_zone_summary}
+\begin{tabular}{lc}
+\hline
+\textbf{Indicador} & \textbf{Valor medio} \\
+\hline
+$t_{lo}$ & 0,045 \\
+$t_{hi}$ & 0,836 \\
+Cobertura directa en train & 20,4\% \\
+Sujetos en verde (test) & 1,4 \\
+Sujetos en amarilla (test) & 22,3 \\
+Sujetos en roja (test) & 6,3 \\
+\hline
+\end{tabular}
+\end{table}
+
+Bajo la restricción de error extremo nulo, el Stage 1 resuelve directamente una fracción limitada de la muestra y deja
+la mayor parte de los pacientes en zona amarilla. Lejos de ser un defecto, este comportamiento confirma que el sistema
+es prudente: decide solo cuando la evidencia es realmente extrema. La ambigüedad no se oculta; se reconoce y se delega
+a una segunda capa.
+
+Conviene precisar, además, cómo deben leerse los umbrales de la tabla. Los valores $t_{lo}$ y $t_{hi}$ no son umbrales
+globales fijados una vez para todo el sistema, sino medias descriptivas de los umbrales aprendidos de nuevo en cada una
+de las 100 particiones externas. Operativamente, cada seed aprende sus propios cortes sobre su training set y aplica
+solo esos cortes a su test correspondiente.
+
+Esta tabla puede leerse además como una primera ablación estructural del sistema. El Stage 1 por sí solo aporta la
+puntuación de riesgo y una pequeña cobertura directa de alta confianza, pero deja sin resolver la mayoría de los casos
+clínicamente interesantes. El valor del Stage 2 no está en reemplazar al primer escalón, sino en convertir esa zona
+amarilla en una decisión utilizable.
+
+Esa asimetría se aprecia mejor si se mira la distribución de los envíos directos. La zona roja aparece en todas las
+particiones y resuelve de forma directa una mediana de 5 pacientes en test, mientras que la zona verde es mucho más
+modesta, con mediana de 1 paciente y ausencia completa en 45 de las 100 seeds. Por eso el umbral bajo no debe leerse
+como un mecanismo de descarga masiva, sino como una válvula conservadora que solo se activa cuando la evidencia negativa
+es especialmente fuerte.
+
+\subsection{Sensibilidad a la tolerancia de errores extremos}
+
+Antes de fijar los umbrales del Stage 1, conviene precisar qué se entiende por restricción de error extremo nulo. Sean $\varepsilon_g$ y $\varepsilon_r$ dos márgenes de tolerancia que cuantifican cuántos errores clásicos (falsos positivos en la zona verde, falsos negativos en la roja) se permite al sistema al aplicar esos umbrales directos. La formulación estricta del sistema usa $\varepsilon_g=0$ y $\varepsilon_r=0$, es decir, cero tolerancia a errores dentro de las zonas extremas. Precisamente porque esa formulación es rígida, se comparó con variantes más tolerantes ($\varepsilon_g\leq 1$, $\varepsilon_r\leq 1$) para comprobar si esa rigidez compraba demasiada prudencia a costa de perder cobertura útil. El patrón fue bastante instructivo.
+
+Relajar los márgenes $\varepsilon$ aumenta la resolución directa del Stage 1, sobre todo por la zona roja o por la expansión de la verde, pero ese beneficio no aparece gratis: la BA media del sistema no mejora respecto a la formulación estricta, y los errores permitidos dentro de las zonas extremas dejan de ser nulos por diseño. Por eso la opción $\varepsilon_g=0,\ \varepsilon_r=0$ no debe entenderse como una rigidez caprichosa, sino como la variante que mejor preserva la seguridad de las zonas extremas sin sacrificar rendimiento global.
+
+\begin{table}[ht]
+\centering
+\caption{Sensibilidad del Stage 1 a versiones más tolerantes de la restricción de errores extremos.}
+\label{tab:threshold_tolerance_sensitivity}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\hline
+\textbf{Restricción} & \textbf{BA media} & \textbf{Verde test} & \textbf{Roja test} & \textbf{Amarilla test} & \textbf{FN medios} & \textbf{FP medios} \\
+\hline
+$\varepsilon_g=0,\ \varepsilon_r=0$ & 0,909 & 1,18 & 5,25 & 23,57 & 0,99 & 1,52 \\
+$\varepsilon_g=0,\ \varepsilon_r\leq 1$ & 0,902 & 1,18 & 9,98 & 18,84 & 0,94 & 1,72 \\
+$\varepsilon_g\leq 1,\ \varepsilon_r=0$ & 0,907 & 3,54 & 5,25 & 21,21 & 1,09 & 1,51 \\
+$\varepsilon_g\leq 1,\ \varepsilon_r\leq 1$ & 0,900 & 3,54 & 9,98 & 16,48 & 1,04 & 1,71 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La Tabla~\ref{tab:threshold_tolerance_sensitivity} refuerza la lectura conservadora del diseño. Al permitir incluso una tolerancia pequeña en verde o en roja, la cobertura directa aumenta, pero la BA media no mejora respecto a la versión estricta y el sistema empieza a comprar esa cobertura con un número algo mayor de errores. Como esta comparación se planteó como un chequeo adicional de sensibilidad, sus recuentos medios de verde, amarilla y roja no tienen por qué coincidir al decimal con los de la Tabla~\ref{tab:stage1_zone_summary}; aquí importa el desplazamiento relativo al relajar la restricción, no replicar exactamente la evaluación principal.
+
+Ahora bien, la dominancia de la zona amarilla en los resultados finales (23,57 pacientes de media frente a 1,18 verdes y 5,25 rojos por partición de 30 sujetos) podría interpretarse como un problema: el cribado deja casi todos los sujetos en la categoría intermedia. Sin embargo, esta distribución refleja una decisión metodológica que se puede verificar cuantitativamente. Un análisis exploratorio mediante barrido de hiperparámetros C en el Stage 1 sobre 100 particiones externas revela que la elección de C no es arbitraria.
+
+\begin{table}[ht]
+\centering
+\caption{Comparación de rendimiento del sistema cascada bajo diferentes regularizaciones del Stage 1.}
+\label{tab:stage1_c_comparison}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccccc}
+\hline
+\textbf{C Stage 1} & \textbf{BA media} & \textbf{Sens} & \textbf{Spec} & \textbf{FN} & \textbf{FP} & \textbf{Verde} & \textbf{Roja} & \textbf{Amarilla} & \textbf{Cobertura dir.} \\
+\hline
+0,01 (hiperregularización) & 0,896 ± 0,047 & 0,936 & 0,856 & 1,15 & 1,73 & 1,17 & 6,21 & 22,62 & 0,246 \\
+0,05 & 0,908 ± 0,051 & 0,938 & 0,878 & 1,11 & 1,46 & 1,17 & 5,62 & 23,21 & 0,226 \\
+\textbf{0,1 (elegido)} & \textbf{0,910 ± 0,053} & \textbf{0,944} & \textbf{0,878} & \textbf{1,01} & \textbf{1,47} & \textbf{1,18} & \textbf{5,25} & \textbf{23,57} & \textbf{0,214} \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La Tabla~\ref{tab:stage1_c_comparison} muestra el dilema clásico de la regularización. Con C=0,01 la cobertura directa sube a 24,6\% (frente a 21,4\% con C=0,1), pero ese incremento no se traduce en mejor rendimiento global: la BA cae 1,4 puntos (0,896 vs 0,910), los falsos positivos aumentan en 0,26 y la especificidad disminuye 2,2 puntos. En esta cohorte, por tanto, C=0,01 aporta más resolución directa a costa de peor discriminación global. La elección de C=0,1 se mantiene porque preserva mejor el equilibrio clínico objetivo (sensibilidad alta y errores controlados) en la evaluación externa pareada. El coste es mantener una zona amarilla amplia; pero ese comportamiento no se interpreta como fallo del cribado, sino como una explicitación prudente de la incertidumbre. Es precisamente en esa zona amarilla donde el Stage 2 aporta valor máximo, incorporando información clínica ortogonal para resolver los casos que el metaboloma por sí solo no puede clasificar con seguridad. Por eso la estructura de dos etapas, lejos de ser un fracaso de cribado, es una arquitectura metodológica coherente: reconoce cuándo los datos metabolómicos solos no bastan y delega la decisión final a una integración clínica responsable.
+
+\subsection{Variables clínicas del Stage 2}
+
+Ese paso obliga también a justificar el bloque clínico del segundo escalón. Antes de fijarlo se revisaron las variables
+candidatas con una lógica sencilla, que estuvieran completas, que su codificación fuese estable, que aportaran un
+contexto clínico interpretable y que no resultaran claramente redundantes respecto a la probabilidad del Stage 1.
+
+\begin{table}[ht]
+\centering
+\caption{Resumen descriptivo de las variables clínicas candidatas para el Stage 2. En las variables binarias, la media equivale a la proporción observada en cada grupo.}
+\label{tab:stage2_candidate_eda}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\hline
+\textbf{Variable} & \textbf{Valores faltantes} & \textbf{Media AD} & \textbf{Media NC} & \textbf{Cohen's $d$} \\
+\hline
+MMSE & 0 & 23,13 & 29,47 & $-2{,}20$ \\
+APOE (riesgo ordinal) & 0 & 0,54 & 0,46 & +0,14 \\
+Depresión & 0 & 0,22 & 0,07 & +0,43 \\
+Cardiopatía & 0 & 0,17 & 0,24 & $-0{,}17$ \\
+Edad & 0 & 71,17 & 70,92 & +0,03 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La lectura de este bloque clínico es bastante clara. MMSE concentra la mayor separación directa, depresión aporta una
+señal moderada y APOE una señal más discreta, mientras que cardiopatía y edad son mucho más débiles si se leen de forma
+aislada. Aun así, el segundo escalón no se diseña como un clasificador clínico independiente, sino como una
+reinterpretación contextual de la probabilidad metabolómica dentro de la zona amarilla, así que la fuerza univariante,
+por sí sola, no basta para decidir qué variables deben quedarse.
+
+Por eso se compararon varios bloques clínicos candidatos dentro de esa subpoblación ambigua, tanto en versión
+estrictamente clínica como en combinación con $P(\text{AD})_{S1}$. Esta comparación debe leerse como un cribado
+preliminar dentro de la zona amarilla, no como la evaluación definitiva del sistema completo.
+
+\begin{table}[ht]
+\centering
+\caption{Cribado preliminar de bloques candidatos para el Stage 2 dentro de la subpoblación amarilla. Las BA son medias de RSKF $5\times10$ en esa subpoblación.}
+\label{tab:stage2_candidate_sets}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lc}
+\hline
+\textbf{Entrada del Stage 2} & \textbf{BA media} \\
+\hline
+$P(\text{AD})_{S1}$ solo & 0,773 \\
+$\text{MMSE} + \text{APOE}$ & 0,893 \\
+$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{Cardiopatía}$ & 0,883 \\
+$\text{MMSE} + \text{APOE} + \text{Depresión} + \text{Cardiopatía} + \text{Edad}$ & 0,880 \\
+$P(\text{AD})_{S1}$ + MMSE + APOE & 0,888 \\
+$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + Cardiopatía & 0,914 \\
+$P(\text{AD})_{S1}$ + MMSE + APOE + Depresión + Cardiopatía + Edad & 0,909 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+El patrón es coherente con el papel que se esperaba del segundo escalón. Incluso sin la probabilidad del Stage 1, el
+bloque clínico capta una parte de la estructura de la zona amarilla, sobre todo a través de MMSE y APOE. Sin embargo,
+la mejor discriminación preliminar aparece cuando ese contexto clínico se combina con $P(\text{AD})_{S1}$, lo que
+confirma que el segundo escalón no sustituye a la señal metabolómica, sino que la reinterpreta. En cambio, la edad no
+aporta una ganancia adicional estable en este paso preliminar. Además, conviene insistir en que la BA = 0,914 de esta
+tabla no es directamente comparable con la BA = 0,910 del sistema final, porque aquí solo se está cribando la calidad
+relativa de distintos bloques dentro de la subpoblación amarilla, mientras que más adelante se evalúa el sistema
+completo sobre particiones externas de toda la cohorte.
+
+\subsection{Ajuste del segundo escalón}
+
+La regularización del segundo escalón también mostró una banda útil bastante concentrada. En la búsqueda multi-seed del
+bloque sin edad, 53 de 100 particiones situaron el mejor $C$ en la franja $1$--$10$, con modo en $C=1$. Sin embargo,
+cuando hubo que fijar un único valor para la evaluación externa del sistema completo, $C=10$ fue el que sostuvo el mejor
+equilibrio global y, por eso, se adoptó como configuración final.
+
+La ponderación de clases merece una lectura distinta. Si el único criterio fuese maximizar BA, una ponderación neutral
+tiende a ofrecer cifras algo más altas en chequeos exploratorios adicionales. Sin embargo, al reforzar el peso de la
+clase AD el segundo escalón desplaza el equilibrio hacia una sensibilidad mayor y acepta una pérdida progresiva de
+especificidad. En otras palabras, la elección de $\{0:1,1:2\}$ no debe leerse como la configuración que más BA obtiene,
+sino como un compromiso intermedio entre neutralidad y una penalización excesiva de los falsos negativos.
+
+\begin{table}[ht]
+\centering
+\caption{Chequeo exploratorio de ponderaciones de clase en el Stage 2 con $C=10$, realizado sobre 15 particiones externas adicionales.}
+\label{tab:stage2_class_weights}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Pesos} & \textbf{BA media} & \textbf{Sensibilidad media} & \textbf{Especificidad media} & \textbf{FN medios} & \textbf{FP medios} \\
+\hline
+$\{0:1,1:1\}$ & 0,905 & 0,915 & 0,894 & 1,53 & 1,27 \\
+$\{0:1,1:1{,}5\}$ & 0,896 & 0,926 & 0,867 & 1,33 & 1,60 \\
+$\{0:1,1:2\}$ & 0,885 & 0,926 & 0,844 & 1,33 & 1,87 \\
+$\{0:1,1:3\}$ & 0,873 & 0,930 & 0,817 & 1,27 & 2,20 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La Tabla~\ref{tab:stage2_class_weights} deja un mensaje matizado. A medida que aumenta el peso de la clase AD, la
+sensibilidad crece ligeramente y la especificidad cae de forma sostenida. En ese recorrido, $\{0:1,1:2\}$ se mantuvo
+como un compromiso clínicamente conservador, más exigente con los falsos negativos que la ponderación neutral, pero sin
+llegar al deterioro de especificidad que ya aparece con $\{0:1,1:3\}$. Conviene leer esta comprobación como un control
+orientativo y no con el mismo peso confirmatorio que las comparaciones multi-seed principales del capítulo.
+
+\subsection{Comparación con un modelo monolítico de información total}
+
+Una objeción razonable al sistema de dos etapas es preguntar qué ocurre si toda la información disponible, metabolómica y clínica, se combina desde el principio en una única regresión logística. Ese contraste se evaluó como baseline adicional, usando el mismo bloque metabolómico final y las mismas variables clínicas retenidas para el segundo escalón.
+
+Resultado de la comparación: el sistema de dos etapas alcanza BA = 0,910 ± 0,051, mientras que la logística monolítica con la misma información total alcanza BA = 0,930 ± 0,045. El sistema propuesto no maximiza la métrica global absoluta. Esta es una observación importante para evitar cualquier impresión de sesgo de confirmación: el sistema de dos etapas es conscientemente sub-óptimo en BA porque prioriza otros criterios clínicamente más relevantes.
+
+\begin{table}[ht]
+\centering
+\caption{Comparación entre el sistema final de dos etapas y una logística monolítica con la misma información total, evaluadas sobre el mismo esquema externo.}
+\label{tab:monolithic_vs_cascade}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\hline
+\textbf{Sistema} & \textbf{BA media} & \textbf{Sensibilidad media} & \textbf{Especificidad media} & \textbf{Errores medios} \\
+\hline
+Logística monolítica (metabolómica + clínica) & $0{,}930 \pm 0{,}045$ & 0,904 & 0,955 & 2,26 \\
+Sistema final de dos etapas & $0{,}910 \pm 0{,}051$ & 0,943 & 0,877 & 2,50 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Aquí aparece, probablemente, la comparación más delicada del capítulo. Si el criterio único fuera maximizar BA o especificidad, la logística monolítica con toda la información disponible rendiría mejor que el sistema de dos etapas. Sin embargo, lo hace a costa de una sensibilidad claramente menor (0,904 vs 0,943) y, sobre todo, sin convertir la incertidumbre en un objeto explícito de diseño.
+
+El sistema de dos etapas deliberadamente intercambia 2 puntos porcentuales de BA global (0,930 a 0,910) por tres ganancias clínicas concretas. En primer lugar, una sensibilidad más alta que reduce el riesgo de falsos negativos en un contexto donde detectar AD es prioritario. En segundo lugar, una zona explícita de ambigüedad que el clínico puede ver y gestionar. En tercer lugar, una estructura interpretable donde el perfil metabolómico se presenta por separado del segundo escalón clínico, facilitando la auditoría y comprensión del razonamiento del sistema.
+
+Por tanto, el sistema de dos etapas no debe defenderse como la solución que maximiza cualquier métrica aislada, sino como la arquitectura que reordena deliberadamente el equilibrio clínico hacia estas prioridades. El criterio de elección final no fue la BA aislada, sino el mejor compromiso compatible con los objetivos de este trabajo: proteger la sensibilidad clínica y hacer visible la zona de incertidumbre, aceptando un coste métrico medible.
+
+\begin{table}[ht]
+\centering
+\caption{Comparación resumida de $C$ en el Stage 2 dentro del sistema completo, ya bajo la evaluación externa de 100 particiones.}
+\label{tab:stage2_c_grid}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccc}
+\hline
+\textbf{$C$ Stage 2} & \textbf{BA media del sistema} & \textbf{Sensibilidad media} & \textbf{Especificidad media} \\
+\hline
+0,1 & 0,893 & 0,930 & 0,856 \\
+1 & 0,899 & 0,930 & 0,868 \\
+10 & 0,910 & 0,943 & 0,877 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+% ============================================================
+\section{Rendimiento del sistema final y utilidad clínica}\label{sec:utilidad_clinica}
+
+La evaluación definitiva sobre 100 particiones externas muestra que la reformulación en un sistema de dos etapas con activación condicional no solo es
+conceptualmente más adecuada, sino también clínicamente distinta. Frente al modelo metabolómico base mejora con claridad
+la sensibilidad y reduce el coste de falsos negativos, aunque, como acaba de verse, no maximiza de forma absoluta la BA
+frente a una logística monolítica con toda la información disponible. El sistema final alcanza una Balanced Accuracy
+media en test de 0,910, con sensibilidad de 0,943, especificidad de 0,877 y 2,5 errores medios por holdout.
+
+\begin{table}[ht]
+\centering
+\caption{Rendimiento del sistema de dos etapas en la evaluación multi-seed sobre 100 particiones externas. En train se resume solo la BA interna, porque sensibilidad, especificidad y errores se interpretan aquí sobre el holdout externo.}
+\label{tab:res_cascade_main}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Nivel} & \textbf{BA} & \textbf{P5--P95 BA} & \textbf{Sensibilidad} & \textbf{Especificidad} & \textbf{Errores medios} \\
+\hline
+Train (CV interna) & $0{,}922 \pm 0{,}017$ & --- & --- & --- & --- \\
+Test holdout & $0{,}910 \pm 0{,}051$ & 0,819--1,000 & $0{,}943 \pm 0{,}056$ & $0{,}877 \pm 0{,}095$ & $2{,}5 \pm 1{,}4$ \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+Para leer bien la mejora del sistema de dos etapas conviene separar dos comparaciones. La comparación decisiva es la pareada,
+porque enfrenta Stage 1 y sistema completo sobre exactamente las mismas 100 particiones externas. La comparación con la BA =
+0,863 del modelo standalone sigue siendo útil como contexto general, pero no sustituye a ese contraste más estricto.
+
+\begin{table}[ht]
+\centering
+\caption{Comparación pareada entre Stage 1 solo y el sistema completo de dos etapas sobre las mismas 100 particiones externas. Se reportan mediana e IQR porque la distribución de mejoras no es estrictamente gaussiana.}
+\label{tab:paired_base_vs_cascade}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\hline
+\textbf{Sistema} & \textbf{BA media $\pm$ DE} & \textbf{Mediana} & \textbf{IQR} & \textbf{Percentiles 2,5--97,5} \\
+\hline
+Stage 1 solo & $0{,}850 \pm 0{,}057$ & 0,861 & 0,806--0,889 & 0,736--0,958 \\
+Sistema de dos etapas & $0{,}910 \pm 0{,}051$ & 0,917 & 0,875--0,948 & 0,798--1,000 \\
+Mejora pareada & $+0{,}060 \pm 0{,}067$ & 0,063 & 0,000--0,111 & $-$0,069--+0,167 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+La Tabla~\ref{tab:paired_base_vs_cascade} introduce una comparación más exigente que la mera yuxtaposición de medias.
+Al evaluar Stage 1 y el sistema de dos etapas sobre exactamente las mismas 100 particiones, la mejora media del sistema es de +0,060
+puntos de BA, con mediana de +0,063 y un rango intercuartílico de 0,000 a 0,111. Como la distribución no es
+estrictamente gaussiana, la mediana ayuda a fijar mejor el centro efectivo de cada sistema. En 74 de las 100
+particiones el sistema mejora estrictamente al baseline y en 81 no lo empeora. El contraste de Wilcoxon para muestras
+apareadas arroja $p = 6{,}9 \times 10^{-12}$, lo que refuerza que la ganancia no puede atribuirse razonablemente a
+fluctuaciones aleatorias del split.
+
+Aquí conviene distinguir dos referencias que son cercanas, pero no equivalentes. La BA = 0,863 del modelo base 11f
+corresponde a la reevaluación metabolómica standalone mediante holdout repetido. En cambio, la BA = 0,850 del Stage 1
+solo es el comparador apareado dentro de las mismas 100 particiones externas usadas por el sistema de dos etapas, con
+el mismo protocolo de aprendizaje de umbrales y la misma partición train/test. No son cifras contradictorias, sino dos
+vistas del mismo clasificador bajo marcos de evaluación distintos. La lectura útil es sencilla: el sistema de dos
+etapas mejora con claridad al baseline metabolómico directo y, si además se lo sitúa frente al modelo standalone, el
+rendimiento global pasa de 0,863 a 0,910, aunque esa segunda comparación ya no sea estrictamente pareada.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.96\textwidth]{imagenes/figuras/cascade_performance_distribution.png}
+\caption{Distribución de la BA del sistema de dos etapas y mejora aportada por el Stage 2 sobre el baseline pareado, siempre sobre las mismas 100 particiones externas.}
+\label{fig:cascade_performance_distribution}
+\end{figure}
+
+La distribución de BA entre seeds ayuda a ir más allá de la simple media. Se concentra en torno a 0,91 y la aportación
+del Stage 2 es, en promedio, claramente positiva: la mejora media respecto al Stage 1 aislado es de aproximadamente
++0,060 puntos de BA. El rango empírico P5--P95 para la BA del sistema (0,819--1,000) sugiere además que el buen
+comportamiento no depende de un subconjunto muy pequeño de particiones favorables. Eso refuerza una lectura importante:
+la segunda etapa no añade complejidad decorativa, sino que resuelve una parte real de la incertidumbre residual.
+
+Desde el punto de vista estructural, esta comparación muestra que la arquitectura de dos etapas no debe entenderse como una simple variante del mismo clasificador, sino como un sistema distinto: el Stage 1 solo ordena el riesgo; el segundo escalón se activa de forma condicional para resolver una parte de la ambigüedad residual. Esa es la razón por la que el contraste relevante aquí no es entre dos hiperparámetros, sino entre dos formulaciones del problema.
+
+La lectura clínica del resultado también puede hacerse con más detalle. En promedio, sobre cada holdout de 30 sujetos, el sistema comete 2,5 errores, de los cuales aproximadamente 1,0 son falsos negativos y 1,5 falsos positivos. Este balance es sobrio pero relevante: el sistema mejora la sensibilidad sin disparar el coste de sobrediagnóstico, que es exactamente el tipo de compromiso esperable en un contexto de priorización clínica.
+
+% ============================================================
+\section{Robustez y alternativas descartadas}\label{sec:robustez}
+
+Una parte esencial del valor del sistema es que su rendimiento no depende de una semilla afortunada ni de un ajuste frágil de los umbrales. Por eso la robustez se analizó en varios niveles: consistencia entre estrategias de validación, estabilidad de umbrales, aportación real del Stage 2 y comparación con alternativas metodológicas plausibles.
+
+Hay tres resultados de robustez que merece la pena retener. El primero es que LOO-CV y RSKF producen resultados prácticamente equivalentes para el modelo base, aunque las métricas finales del sistema se reportan con el esquema interno basado en LOO dentro de cada training set. El segundo es que la estabilidad de umbrales es razonable: $t_{lo}$ y $t_{hi}$ muestran variabilidad moderada entre semillas, pero pequeñas perturbaciones alrededor de su valor nominal no cambian de forma dramática el rendimiento. El tercero es que el sistema mantiene un gap train-test de apenas 0,012 puntos de BA, compatible con complejidad bien contenida y una mejora consistente de +6,0 pp respecto al Stage 1 aislado.
+
+\begin{table}[ht]
+\centering
+\caption{Alternativas exploradas bajo la misma lógica de evaluación repetida y decisión metodológica final.}
+\label{tab:res_alternatives}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{4.0cm}}
+\hline
+\textbf{Alternativa} & \textbf{Hipótesis} & \textbf{Conclusión} \\
+\hline
+Blending LR + XGBoost & Capturar no linealidades sin perder la señal lineal & Empeora la BA media y aumenta la varianza. \\
+Stacking con segundo modelo & Añadir una probabilidad complementaria al Stage 2 & No mejora de forma consistente en multi-seed. \\
+KNN post-hoc & Corregir errores locales por vecindad & Introduce complejidad sin ganancia robusta. \\
+Mayor regularización en Stage 1 & Ganar cobertura de extremos por compresión probabilística & Mejora splits aislados, pero no la BA media global. \\
+Ayuno lineal/cuadrático en Stage 2 & Añadir señal clínica residual & No aporta mejora estable. \\
+Eliminación de outliers & Limpiar casos difíciles & No mejora el sistema y empobrece el realismo clínico. \\
+\hline
+\end{tabular}
+\end{table}
+
+Aquí el resultado negativo es casi tan valioso como el positivo. La arquitectura final no se retuvo por preferencia
+subjetiva ni por inercia, sino porque las opciones más complejas o intuitivamente atractivas no sostuvieron una ventaja
+real bajo comparación repetida.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.72\textwidth]{imagenes/figuras/learning_curve.png}
+\caption{Curva de aprendizaje del sistema final.}
+\label{fig:learning_curve_results}
+\end{figure}
+
+La curva de aprendizaje refuerza esa lectura desde otro ángulo. El rendimiento de test mejora de forma progresiva con
+el tamaño de entrenamiento, mientras el gap se reduce sin mostrar explosiones de varianza. La impresión que deja no es
+la de una arquitectura equivocada, sino la de una solución razonable cuya principal limitación sigue siendo muestral.
+
+% ============================================================
+\section{Proyección clínica simplificada del rendimiento global}\label{sec:impacto}
+
+El valor de una arquitectura de triaje no se mide solo en términos de Balanced Accuracy. También importa cómo podría
+redistribuir la carga diagnóstica, qué volumen de pacientes concentraría en la vía de confirmación y qué fracción de
+sujetos podría descargarse de procedimientos más invasivos o costosos. Dicho eso, conviene empezar por una lectura
+operativa del propio sistema, porque su lógica no consiste en etiquetar a todos los pacientes de una vez, sino en
+resolver directamente una minoría de casos extremos y reservar la reevaluación para la zona ambigua.
+
+\begin{table}[ht]
+\centering
+\caption{Lectura operativa media del sistema de dos etapas en test, sobre un holdout externo de 30 pacientes con la mezcla observada en la cohorte.}
+\label{tab:cascade_flow_summary}
+\begin{tabular}{lcc}
+\hline
+\textbf{Destino en el sistema} & \textbf{Pacientes medios} & \textbf{Proporción} \\
+\hline
+Resolución directa en verde (NC) & 1,4 & 4,7\% \\
+Resolución directa en rojo (AD) & 6,3 & 21,0\% \\
+Derivación al Stage 2 & 22,3 & 74,3\% \\
+Resolución directa total en Stage 1 & 7,7 & 25,7\% \\
+\hline
+\end{tabular}
+\end{table}
+
+El sistema no funciona como un filtro que descargue masivamente la vía clínica desde el primer escalón. Su
+comportamiento es más prudente: aproximadamente uno de cada cuatro pacientes queda resuelto directamente en el Stage 1 y
+cerca de tres de cada cuatro atraviesan el segundo escalón. El valor del diseño, por tanto, no está en evitar de golpe
+toda reevaluación, sino en separar con claridad los casos más extremos y concentrar la decisión adicional precisamente
+donde la señal metabolómica deja más dudas.
+
+La figura y la tabla siguientes deben leerse ya como una proyección clínica simplificada a partir de la sensibilidad y
+la especificidad globales del sistema final, no como una simulación completa del flujo verde/amarillo/rojo.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.76\textwidth]{imagenes/figuras/prevalence_sensitivity_cascade.png}
+\caption{Sensibilidad a prevalencia del sistema final: evolución de PPV y NPV en función de la prevalencia de AD, calculada a partir de la sensibilidad y especificidad globales medias del sistema final.}
+\label{fig:prevalence_sensitivity_cascade}
+\end{figure}
+
+La Figura~\ref{fig:prevalence_sensitivity_cascade} muestra que el NPV se mantiene muy alto incluso cuando aumenta la
+prevalencia, mientras que el PPV mejora de forma progresiva al entrar en poblaciones más enriquecidas clínicamente. Es
+una combinación atractiva para un sistema de priorización: protege bien la decisión negativa y gana valor positivo a
+medida que el contexto clínico se vuelve más selectivo.
+
+\begin{table}[ht]
+\centering
+\caption{Escenarios clínicos hipotéticos por cada 1000 pacientes, derivados de la sensibilidad y especificidad globales medias del sistema final. No representan el circuito operativo completo de zonas verde, amarilla y roja.}
+\label{tab:clinical_scenarios}
+\begin{tabular}{lcccccc}
+\hline
+\textbf{Prevalencia} & \textbf{TP} & \textbf{FN} & \textbf{TN} & \textbf{FP} & \textbf{PPV} & \textbf{NPV} \\
+\hline
+5\% & 47 & 3 & 833 & 117 & 28,7\% & 99,6\% \\
+\textbf{10\%} & \textbf{94} & \textbf{6} & \textbf{789} & \textbf{111} & \textbf{45,9\%} & \textbf{99,2\%} \\
+20\% & 189 & 11 & 701 & 99 & 65,6\% & 98,5\% \\
+\hline
+\end{tabular}
+\end{table}
+
+La Tabla~\ref{tab:clinical_scenarios} permite una lectura mucho más operativa. La fila resaltada corresponde a la prevalencia del 10\%, que es la estimada para la enfermedad de Alzheimer en la población general europea, y por tanto la más clínicamente relevante para interpretar este sistema. En una población con prevalencia del 10\%, el sistema identificaría correctamente a 94 pacientes con AD por cada 100 casos reales, incurriría en 6 falsos negativos y clasificaría correctamente como negativos a 789 controles. Los 111 falsos positivos, distribuidos entre la zona amarilla y red del sistema, serían candidatos a confirmación diagnóstica. Visto como filtro previo a una vía confirmatoria invasiva o costosa, este escenario concentraría la
+derivación intensiva en aproximadamente 205 pacientes de cada 1000 y evitaría esa escalada diagnóstica en 795. De esas
+795 decisiones negativas, 789 serían correctas y 6 serían errores clínicamente costosos. Esta proyección no sustituye a
+la lectura estructural del sistema, donde una parte de los sujetos se resuelve directamente y otra parte atraviesa el
+segundo escalón.
+
+La herramienta de cribado muestra para esa prevalencia del 10% un valor predictivo negativo muy alto (NPV = 99,2%), que indica una excelente capacidad para descartar la enfermedad: un paciente clasificado como negativo tiene una probabilidad del 99,2% de no tener Alzheimer. Mantiene al mismo tiempo un valor predictivo positivo moderado (PPV = 45,9%), coherente con escenarios de cribado poblacional en condiciones de baja prevalencia como la enfermedad de Alzheimer en la población general. Este patrón refleja precisamente la lógica de un sistema de triaje: no afirma diagnóstico con certeza, sino que prioriza con precisión quiénes necesitan confirmación intensiva y, sobre todo, protege de manera muy fiable a los pacientes que genuinamente no tienen la enfermedad.
+
+Desde el punto de vista \textbf{clínico}, este patrón es relevante porque combina alta sensibilidad con una NPV muy
+elevada. Desde el punto de vista \textbf{económico}, sugiere una reducción potencial del volumen de procedimientos
+confirmatorios aplicados de manera indiscriminada, aunque esta sección no cuantifica todavía el circuito completo de
+triaje. Y desde el punto de vista \textbf{social}, indica que una fracción amplia de pacientes podría evitar pruebas más
+invasivas, costes indirectos y carga emocional innecesaria, siempre que el sistema se utilice como filtro prudente y no
+como sustituto absoluto del juicio clínico.
+
+En ese sentido, el principal valor social del sistema no reside en ``ahorrar pruebas'' de forma ciega, sino en introducir
+una priorización más razonable: reservar la intensidad diagnóstica máxima para los pacientes con mayor evidencia y
+reducir la exposición innecesaria de controles o perfiles claramente negativos a rutas más agresivas.
+
+Leído frente a la literatura de partida, este valor no es solo cuantitativo. El modelo base ya mejora la extracción de señal respecto al marco inicial de clasificación binaria, pero el sistema de dos etapas añade además un cambio de formulación: no intenta únicamente discriminar mejor AD frente a NC, sino organizar el uso clínico de la incertidumbre de una forma más próxima a la práctica real.
+
+% ============================================================
+\section{Interpretabilidad clínica y biológica}\label{sec:interpretabilidad}
+
+El valor del sistema no se agota en sus métricas. Una parte importante de su interés está en que la solución final mantiene una lectura clínica y biológica comprensible. El panel metabolómico base combina variables que se agrupan de forma bastante natural en cuatro ejes: esfingolípidos relacionados con apoptosis y neuroinflamación, fosfolípidos de membrana, un eje neuroesteroide dominado por DHEAS y un eje aminoácido/función vascular alrededor de Arg y DOPA.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{imagenes/figuras/biological_pathways.png}
+\caption{Lectura fisiopatológica integrada del panel metabolómico final.}
+\label{fig:biological_pathways_results}
+\end{figure}
+
+La lectura biológica del panel también gana claridad si se evita pensar en una molécula aislada. La discriminación
+emerge de la combinación entre varios ejes parciales, no de un único metabolito milagroso. Eso encaja tanto con la
+fisiopatología de la enfermedad como con el comportamiento estadístico del clasificador: señal distribuida, solapamiento
+parcial y necesidad de combinar evidencia moderada.
+
+\begin{table}[ht]
+\centering
+\caption{Síntesis biológica del panel metabolómico final: metabolitos seleccionados, dirección, ejes fisiopatológicos y lectura clínica.}
+\label{tab:biological_interpretation}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llll}
+\hline
+\textbf{Metabolito} & \textbf{Dirección en AD} & \textbf{Eje biológico} & \textbf{Implicación clínica} \\
+\hline
+Cer(d18:1/20:0) & Elevado & Esfingolípidos / Apoptosis & Señalización de muerte celular y neuroinflamación \\
+HexCer(d18:1/26:1) & Elevado & Esfingolípidos / Metabolismo & Alteración del metabolismo esfingolipídico \\
+PC.aa.C40:4 & Elevado & Fosfolípidos / Integridad de membrana & Alteración de la composición y fluidez de membranas \\
+lysoPC.a.C18:2 & Elevado & Fosfolípidos / Inflamación & Aumento de fragmentos lipídicos inflamatorios \\
+DHEAS & Reducido & Eje neuroesteroide & Pérdida de neuroprotección y capacidad antioxidante \\
+Arg & Elevado & Aminoácidos / Función vascular & Aumento de precursores del óxido nítrico y función vascular \\
+DOPA & Reducido & Neurotransmisores / Dopamina & Alteración del sistema dopaminérgico \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+El patrón conjunto de estos siete metabolitos muestra que la AD, desde la perspectiva metabolómica periférica, se refleja como una alteración multiaxial. Los esfingolípidos elevados (Cer20, HexCer) sugieren activación de cascadas apoptóticas; los fosfolípidos elevados (PC.aa.C40:4 y lysoPC.a.C18:2) apuntan a alteraciones profundas en la composición y dinámica de membranas junto con aumento de fragmentos lipídicos proinflamatorios; el Arg elevado podría reflejar un desajuste compensatorio en la síntesis de óxido nítrico; mientras que DHEAS bajo refleja pérdida de neuroprotección y DOPA bajo insinúa alteración del sistema dopaminérgico. Esta lectura multiaxial tiene coherencia fisiopatológica y explica por qué el solapamiento entre AD y NC persiste: distintos pacientes pueden presentar dominancia en ejes diferentes, generando heterogeneidad clínica incluso dentro de un diagnóstico de Alzheimer confirmado.
+
+Desde el punto de vista clínico, la arquitectura también conserva interpretabilidad. El Stage 1 resume el perfil bioquímico del paciente y delimita el espacio de confianza. El Stage 2 no sustituye esa información, sino que la reinterpreta con variables clínicas ortogonales cuando el caso cae en la región de ambigüedad. Esta estructura hace visible la incertidumbre en lugar de ocultarla, y eso representa una ventaja real frente a soluciones más opacas o monolíticas.
+
+Ese es, en última instancia, el sentido más sólido de los resultados de este capítulo. La contribución principal del
+trabajo no es únicamente mejorar una métrica media, sino mostrar que el problema se entiende mejor y se resuelve de una
+forma más coherente cuando se abandona la lógica de clasificación plana y se adopta una formulación explícita de triaje
+clínico.

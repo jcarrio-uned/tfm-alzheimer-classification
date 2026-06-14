@@ -1,0 +1,185 @@
+<svg viewBox="0 0 1400 1100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .box { fill: #f5f5f5; stroke: #333; stroke-width: 2; }
+      .box-phase { fill: #e8e8e8; stroke: #000; stroke-width: 2.5; }
+      .label { font-size: 12px; fill: #000; font-family: Arial, sans-serif; font-weight: 500; }
+      .phase-label { font-size: 11px; fill: #555; font-family: Arial, sans-serif; font-style: italic; }
+      .arrow { fill: none; stroke: #333; stroke-width: 2; marker-end: url(#arrowhead); }
+      .arrow-down { fill: none; stroke: #333; stroke-width: 2; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#000">Pipeline del análisis: desarrollo y validación</text>
+
+  <!-- FASE 1: DATA PREPARATION -->
+  <g id="phase1">
+    <text x="20" y="70" font-size="11" fill="#666" font-style="italic">FASE 1: Preparación de datos</text>
+    
+    <!-- Cohorte -->
+    <rect x="50" y="85" width="140" height="60" class="box"/>
+    <text x="120" y="110" text-anchor="middle" class="label">Cohorte TARCC</text>
+    <text x="120" y="128" text-anchor="middle" font-size="10" fill="#666">N=148 (89 AD, 59 NC)</text>
+    
+    <!-- Arrow -->
+    <path d="M 190 115 L 240 115" class="arrow"/>
+    
+    <!-- Residualización -->
+    <rect x="240" y="85" width="140" height="60" class="box"/>
+    <text x="310" y="110" text-anchor="middle" class="label">Residualización</text>
+    <text x="310" y="128" text-anchor="middle" font-size="10" fill="#666">20 metabolitos</text>
+  </g>
+
+  <!-- FASE 2: EDA -->
+  <g id="phase2">
+    <text x="20" y="195" font-size="11" fill="#666" font-style="italic">FASE 2: Análisis exploratorio</text>
+    
+    <!-- Arrow -->
+    <path d="M 380 115 L 430 115" class="arrow"/>
+    
+    <!-- EDA -->
+    <rect x="430" y="85" width="140" height="60" class="box"/>
+    <text x="500" y="110" text-anchor="middle" class="label">EDA</text>
+    <text x="500" y="128" text-anchor="middle" font-size="10" fill="#666">Distribuciones, PCA, outliers</text>
+    
+    <!-- Arrow down -->
+    <path d="M 500 145 L 500 185" class="arrow-down"/>
+  </g>
+
+  <!-- FASE 3: MODEL SELECTION -->
+  <g id="phase3">
+    <text x="20" y="250" font-size="11" fill="#666" font-style="italic">FASE 3: Selección de modelo y variables</text>
+    
+    <!-- Comparación familias -->
+    <rect x="380" y="185" width="140" height="60" class="box"/>
+    <text x="450" y="210" text-anchor="middle" class="label">Comparación de</text>
+    <text x="450" y="225" text-anchor="middle" class="label">familias (SSS-200)</text>
+    
+    <!-- Arrow -->
+    <path d="M 520 215 L 570 215" class="arrow"/>
+    
+    <!-- Stability selection -->
+    <rect x="570" y="185" width="140" height="60" class="box"/>
+    <text x="640" y="210" text-anchor="middle" class="label">Stability</text>
+    <text x="640" y="225" text-anchor="middle" class="label">Selection</text>
+    
+    <!-- Arrow -->
+    <path d="M 710 215 L 760 215" class="arrow"/>
+    
+    <!-- Forward selection -->
+    <rect x="760" y="185" width="140" height="60" class="box"/>
+    <text x="830" y="210" text-anchor="middle" class="label">Forward</text>
+    <text x="830" y="225" text-anchor="middle" class="label">Selection</text>
+    
+    <!-- Arrow -->
+    <path d="M 900 215 L 950 215" class="arrow"/>
+    
+    <!-- Feature engineering -->
+    <rect x="950" y="185" width="140" height="60" class="box"/>
+    <text x="1020" y="210" text-anchor="middle" class="label">Ingeniería de</text>
+    <text x="1020" y="225" text-anchor="middle" class="label">features</text>
+    
+    <!-- Arrow down -->
+    <path d="M 1020 245 L 1020 285" class="arrow-down"/>
+  </g>
+
+  <!-- FASE 4: BASELINE MODEL -->
+  <g id="phase4">
+    <text x="20" y="360" font-size="11" fill="#666" font-style="italic">FASE 4: Modelo base binario</text>
+    
+    <!-- Panel base -->
+    <rect x="900" y="285" width="140" height="60" class="box"/>
+    <text x="970" y="310" text-anchor="middle" class="label">Panel base</text>
+    <text x="970" y="328" text-anchor="middle" font-size="10" fill="#666">11 variables</text>
+    
+    <!-- Arrow -->
+    <path d="M 900 315 L 850 315" class="arrow"/>
+    
+    <!-- LogReg model -->
+    <rect x="710" y="285" width="140" height="60" class="box"/>
+    <text x="780" y="310" text-anchor="middle" class="label">Regresión</text>
+    <text x="780" y="328" text-anchor="middle" class="label">Logística</text>
+    
+    <!-- Arrow down -->
+    <path d="M 780 345 L 780 385" class="arrow-down"/>
+  </g>
+
+  <!-- FASE 5: ERROR ANALYSIS -->
+  <g id="phase5">
+    <text x="20" y="470" font-size="11" fill="#666" font-style="italic">FASE 5: Análisis de errores</text>
+    
+    <!-- Error analysis -->
+    <rect x="710" y="385" width="140" height="60" class="box"/>
+    <text x="780" y="410" text-anchor="middle" class="label">Análisis de</text>
+    <text x="780" y="425" text-anchor="middle" class="label">errores</text>
+    
+    <!-- Arrow right -->
+    <path d="M 850 415 L 900 415" class="arrow"/>
+    
+    <!-- Decision point -->
+    <rect x="900" y="385" width="140" height="60" class="box"/>
+    <text x="970" y="410" text-anchor="middle" class="label">Conclusión:</text>
+    <text x="970" y="425" text-anchor="middle" font-size="10" fill="#666">Necesario triaje</text>
+    
+    <!-- Arrow down -->
+    <path d="M 780 445 L 780 485" class="arrow-down"/>
+  </g>
+
+  <!-- FASE 6: TWO-STAGE SYSTEM -->
+  <g id="phase6">
+    <text x="20" y="580" font-size="11" fill="#666" font-style="italic">FASE 6: Sistema de dos etapas</text>
+    
+    <!-- Stage 1 -->
+    <rect x="580" y="485" width="140" height="70" class="box-phase"/>
+    <text x="650" y="515" text-anchor="middle" class="label">Stage 1</text>
+    <text x="650" y="532" text-anchor="middle" font-size="10" fill="#333">Umbrales metabolómicos</text>
+    <text x="650" y="545" text-anchor="middle" font-size="9" fill="#666">(Green / Yellow / Red)</text>
+    
+    <!-- Arrow -->
+    <path d="M 720 520 L 770 520" class="arrow"/>
+    
+    <!-- Stage 2 -->
+    <rect x="770" y="485" width="140" height="70" class="box-phase"/>
+    <text x="840" y="515" text-anchor="middle" class="label">Stage 2</text>
+    <text x="840" y="532" text-anchor="middle" font-size="10" fill="#333">Variables clínicas</text>
+    <text x="840" y="545" text-anchor="middle" font-size="9" fill="#666">(solo Yellow)</text>
+    
+    <!-- Arrow down -->
+    <path d="M 650 555 L 650 595" class="arrow-down"/>
+  </g>
+
+  <!-- FASE 7: VALIDATION -->
+  <g id="phase7">
+    <text x="20" y="690" font-size="11" fill="#666" font-style="italic">FASE 7: Evaluación final</text>
+    
+    <!-- Validation -->
+    <rect x="580" y="595" width="330" height="70" class="box"/>
+    <text x="745" y="620" text-anchor="middle" class="label">100 particiones externas</text>
+    <text x="745" y="635" text-anchor="middle" font-size="10" fill="#666">Stage 1: BA = 0.850 ± 0.057</text>
+    <text x="745" y="648" text-anchor="middle" font-size="10" fill="#666">Stage 1 + Stage 2: BA = 0.910 ± 0.051</text>
+    
+    <!-- Arrow down -->
+    <path d="M 745 665 L 745 705" class="arrow-down"/>
+  </g>
+
+  <!-- RESULT -->
+  <g id="result">
+    <rect x="520" y="705" width="450" height="100" class="box-phase"/>
+    <text x="745" y="735" text-anchor="middle" font-size="13" font-weight="bold" fill="#000">Sistema final: triaje clínico de dos etapas</text>
+    <text x="745" y="758" text-anchor="middle" font-size="11" fill="#333">Sensibilidad: 0.943 ± 0.056   |   Especificidad: 0.877 ± 0.095</text>
+    <text x="745" y="776" text-anchor="middle" font-size="11" fill="#333">Gestión explícita de incertidumbre y priorización clínica</text>
+  </g>
+
+  <!-- Side note -->
+  <text x="50" y="870" font-size="10" fill="#666" font-style="italic">Notas metodológicas:</text>
+  <text x="50" y="890" font-size="9" fill="#666">• SSS-200: Stratified Shuffle Split con 200 particiones para desarrollo</text>
+  <text x="50" y="905" font-size="9" fill="#666">• Cada fase se ejecuta con separación estricta train/test sin data leakage</text>
+  <text x="50" y="920" font-size="9" fill="#666">• El sistema final no maximiza BA global (0.930 monolítico), sino que prioriza sensibilidad e interpretabilidad</text>
+  <text x="50" y="935" font-size="9" fill="#666">• Trade-off consciente: 2 puntos de BA a cambio de gestión explícita de ambigüedad y sensibilidad clínica</text>
+
+</svg>

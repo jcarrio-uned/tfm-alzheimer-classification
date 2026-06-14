@@ -1,0 +1,93 @@
+\chapter{Estado del Arte}\label{chap:estado_arte}
+
+\section{La enfermedad de Alzheimer}
+
+La enfermedad de Alzheimer (EA) es un proceso neurodegenerativo progresivo cuya neuropatología puede preceder en décadas a la manifestación clínica \parencite{holtzman2011alzheimers}. Durante ese periodo se acumulan depósitos extracelulares de $\beta$-amiloide y ovillos intraneuronales de tau hiperfosforilada \parencite{querfurth2010alzheimers,drummond2017alzheimers}.
+
+Esta disociación temporal entre biología y clínica tiene implicaciones diagnósticas directas, ya que cuando un paciente visita una consulta por quejas de pérdidas de memoria, la patología subyacente suele llevar tiempo instaurada. En ese momento, el clínico no solo necesita confirmar deterioro cognitivo (algo posible con evaluación neuropsicológica), sino determinar su etiología identificando si es Alzheimer u otra causa, porque el pronóstico y el manejo terapéutico cambian de forma sustancial.
+
+La definición biológica de EA adoptada por el marco NIA-AA \parencite{jack2018nia} se organiza en tres ejes: amiloide (A), tau (T) y neurodegeneración (N). Esta formulación desplaza el diagnóstico hacia los biomarcadores y plantea una pregunta práctica clave: ¿cómo se determina el estado A/T/N de un paciente concreto?
+
+\section{El diagnóstico actual y sus limitaciones}
+
+Los dos métodos de referencia para establecer el perfil biológico son la punción lumbar (LP), que cuantifica A$\beta$42/A$\beta$40, p-tau181 y t-tau en líquido cefalorraquídeo, y la neuroimagen PET amiloide/tau. Ambos presentan barreras prácticas que limitan su uso como herramientas de cribado poblacional:
+
+\begin{itemize}
+    \item La \textbf{punción lumbar} es un procedimiento invasivo con riesgo de cefalea post-punción (10--30\%), requiere personal entrenado y suele generar rechazo en parte de los pacientes. En la práctica, una proporción no trivial la rechaza o la retrasa.
+
+    \item El \textbf{PET amiloide} (florbetapir, flutemetamol) permite detectar acumulación de beta-amiloide cerebral, pero su coste supera los 3.000€ por estudio, su disponibilidad se concentra en centros terciarios y conlleva exposición a radiación ionizante.
+
+    \item La \textbf{resonancia magnética} detecta atrofia hipocampal, aunque este hallazgo aparece en fases más avanzadas y no es específico de EA.
+\end{itemize}
+
+El resultado es un cuello de botella diagnóstico: hay más pacientes con sospecha clínica que capacidad real para confirmarla con los métodos disponibles. De este escenario derivan dos riesgos clínicos: pacientes con EA que no se diagnostican a tiempo y pacientes sin EA que, ante la incertidumbre, se someten a pruebas innecesarias o permanecen en un limbo diagnóstico con impacto psicológico relevante.
+
+La consecuencia lógica es desarrollar filtros previos de estratificación, menos invasivos y más accesibles, que ayuden a decidir quién necesita una prueba confirmatoria y quién puede evitarla con un margen razonable de seguridad.
+
+\section{Biomarcadores plasmáticos: el estado actual}
+
+La sangre periférica es el candidato natural para ese primer filtro, por su obtención rutinaria, bajo coste relativo y elevada aceptabilidad. En la última década se han producido avances importantes en biomarcadores sanguíneos de EA \parencite{blennow2023biomarkers,nakamura2018high,giau2021blood}, especialmente en tres líneas:
+
+\begin{itemize}
+    \item \textbf{p-tau217 y p-tau181}: formas fosforiladas de tau que se correlacionan con la carga amiloide cerebral y alcanzan, en cohortes de investigación, sensibilidades superiores al 90\% para detectar positividad amiloide.
+
+    \item \textbf{GFAP} (\textit{Glial Fibrillary Acidic Protein}): marcador de astrogliosis reactiva que puede elevarse en etapas preclínicas.
+
+    \item \textbf{NfL} (\textit{Neurofilament Light Chain}): marcador de daño axonal útil para seguimiento, aunque poco específico en términos etiológicos.
+\end{itemize}
+
+Estos marcadores proteicos suponen un avance claro, pero conviene matizar sus límites: dependen de tecnologías ultrasensibles (Simoa, LC-MS/MS de alta resolución), su despliegue fuera de centros de referencia todavía es limitado y su validación más robusta procede de cohortes de investigación seleccionadas.
+
+\section{La metabolómica como ventana complementaria}
+
+La metabolómica plasmática aporta una perspectiva distinta \parencite{fiehn2016metabolomics}. En lugar de centrarse en una proteína concreta, captura de forma integrada el estado funcional del metabolismo (lípidos, aminoácidos, ácidos biliares, acilcarnitinas, entre otros) \parencite{thevenot2015analysis}. La literatura sugiere que una parte de la alteración metabólica asociada a EA se refleja en el perfil periférico.
+
+\textcite{mapstone2014plasma} identificaron un panel de 10 fosfolípidos plasmáticos con capacidad para anticipar la conversión de sujetos cognitivamente normales a deterioro cognitivo leve con alta precisión, dos o tres años antes de la manifestación clínica. Aunque ese resultado no se replicó de forma completa en cohortes independientes, abrió una línea de investigación sólida.
+
+\textcite{varma2018brain} mostraron concordancia entre alteraciones metabólicas periféricas y cambios del metabolismo cerebral medido por neuroimagen, aportando plausibilidad biológica al uso de metabolitos plasmáticos como proxies del estado central.
+
+\textcite{huynh2020concordant} reforzaron la evidencia de replicabilidad en dos cohortes independientes de gran tamaño ($n > 1.000$ cada una), con firmas lipídicas consistentes asociadas a EA (ceramidas, fosfolípidos y esfingomielinas).
+
+El lipidoma plasmático humano comprende miles de especies lipídicas con funciones reguladoras y estructurales cuya caracterización es clave para entender estas señales \parencite{quehenberger2011human,wenk2010lipidomics}. La plataforma Biocrates MxP Quant~500 \parencite{biocrates2020} es una referencia en metabolómica dirigida para estudios clínicos, con protocolos estandarizados y control de variabilidad técnica. Además, fue utilizada en el trabajo de referencia \parencite{bernal2025metabolomics} sobre la cohorte TARCC, lo que justifica su adopción como contexto analítico en este TFM.
+
+\section{Aprendizaje automático en el contexto clínico}
+
+Aplicar aprendizaje automático (ML) a datos clínicos de alta dimensionalidad exige algo más que elegir un algoritmo: requiere diseñar un marco de modelado que generalice fuera de muestra y sea clínicamente interpretable \parencite{hastie2009elements}. En biomarcadores ómicos son frecuentes los resultados altos en validación interna que no se sostienen en validación externa \parencite{krstajic2014cross}.
+
+\subsection{El problema de la dimensionalidad en muestras pequeñas}
+
+En metabolómica clínica es habitual trabajar con muchas variables potenciales y relativamente pocos sujetos, siendo este escenario propenso a que modelos flexibles aprendan patrones espurios del entrenamiento. El concepto de \textit{Events Per Variable} (EPV) formaliza esta restricción: el número de parámetros estimables con estabilidad depende de los eventos de la clase minoritaria \parencite{hastie2009elements}. Cuando el EPV es bajo (habitualmente $<10$), reducir dimensionalidad deja de ser opcional.
+
+\subsection{Selección de variables: el riesgo de inestabilidad}
+
+La \textit{inestabilidad} en la selección de variables es un problema clásico en alta dimensionalidad: pequeñas perturbaciones de la muestra pueden generar subconjuntos muy distintos. La \textit{stability selection} \parencite{meinshausen2010stability} mitiga este riesgo al evaluar la frecuencia de selección de cada variable bajo múltiples remuestreos. Para comparar estadísticamente el rendimiento de clasificadores sobre múltiples conjuntos de datos, el enfoque de referencia es el descrito por \textcite{demsar2006statistical}.
+
+\subsection{Regularización y parsimonia}
+
+La regularización con penalizaciones L1 (LASSO) \parencite{tibshirani1996regression} y L2 (Ridge) es el enfoque estándar para controlar complejidad en este contexto \parencite{hastie2009elements}. LASSO favorece selección implícita y Ridge estabiliza coeficientes en presencia de correlación. La elección entre ambos depende de la estructura de los datos y del objetivo analítico.
+
+\subsection{Validación y data leakage}
+
+La fuga de información (\textit{data leakage}) es una fuente frecuente de optimismo artificial en biomarcadores. Puede aparecer, por ejemplo, al estandarizar antes de separar train/test o al seleccionar variables con el conjunto completo \parencite{krstajic2014cross}. Una validación rigurosa exige que todo el preprocesamiento se realice dentro de cada fold \parencite{stone1974cross}.
+
+\section{Sistemas de apoyo a la decisión clínica}
+
+Un modelo con buen rendimiento no se traduce automáticamente en utilidad clínica ya que, para ser accionable, sus probabilidades deben mapearse a decisiones concretas (por ejemplo, ``realizar punción lumbar'' frente a ``no realizarla''). Esta traducción requiere umbrales que reflejen costes asimétricos y prioridades clínicas: el coste de un falso negativo no es equivalente al de un falso positivo.
+
+Los sistemas de apoyo a la decisión clínica (CDSS) abordan esta asimetría típicamente con esquemas escalonados con decisiones directas en probabilidades extremas y derivación a evaluación adicional en casos intermedios. Más que sustituir al clínico, estructuran la incertidumbre y la hacen explícita.
+
+\section{Posicionamiento de este trabajo}
+
+El trabajo de referencia \parencite{bernal2025metabolomics}, del que este TFM hereda contexto de datos y plataforma analítica, mostró que un conjunto de metabolitos plasmáticos cuantificados con Biocrates MxP Quant~500 puede discriminar AD frente a NC en TARCC. Sin embargo, varias preguntas clave quedaron abiertas:
+
+\begin{itemize}
+    \item ¿Cuál es la relación real entre complejidad del modelo y sobreajuste en este tamaño muestral?
+
+    \item ¿La ingeniería de \textit{features} aporta señal adicional o introduce grados de libertad que amplifican el sobreajuste?
+
+    \item ¿Cuál es el valor clínico del modelo en términos operativos (punciones evitadas, pacientes no detectados), más allá del AUC?
+
+    \item ¿Los errores son reducibles con más modelado o reflejan límites de la modalidad para ciertos perfiles de pacientes?
+\end{itemize}
+
+Este proyecto busca responder a esas preguntas documentando todo el proceso de decisión: qué modelos se descartaron y por qué, cómo se seleccionaron variables, cómo se definieron umbrales de triaje y qué interpretación biológica admite el panel final. El objetivo no es solo clasificar, sino entender \textit{por qué} se clasifica como se clasifica y \textit{qué implica} cuando el sistema se equivoca.

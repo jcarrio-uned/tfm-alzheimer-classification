@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1140">
+  <defs>
+    <style>
+      .title { font: 700 26px Arial, sans-serif; fill: #111; }
+      .subtitle { font: 600 16px Arial, sans-serif; fill: #222; }
+      .h { font: 700 14px Arial, sans-serif; fill: #111; }
+      .t { font: 13px Arial, sans-serif; fill: #111; }
+      .s { font: 12px Arial, sans-serif; fill: #222; }
+      .box { fill: #fff; stroke: #111; stroke-width: 2; rx: 10; }
+      .group { fill: #fff; stroke: #111; stroke-width: 2; stroke-dasharray: 10 6; rx: 12; }
+      .soft { fill: #f7f7f7; stroke: #111; stroke-width: 2; rx: 10; }
+      .arrow { fill: none; stroke: #111; stroke-width: 2; marker-end: url(#arrow); }
+      .dash-arrow { fill: none; stroke: #111; stroke-width: 1.8; stroke-dasharray: 6 4; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0,0 10,3 0,6" fill="#111"/>
+    </marker>
+  </defs>
+
+  <text x="600" y="44" text-anchor="middle" class="title">Esquema de validación - 100 particiones externas</text>
+  <text x="600" y="70" text-anchor="middle" class="subtitle">Sistema de dos etapas (Stage 1 + Stage 2)</text>
+
+  <rect x="48" y="100" width="1104" height="1020" class="group"/>
+  <text x="72" y="126" class="h">Bucle externo: para i = 1 ... 100</text>
+
+  <rect x="96" y="154" width="1008" height="98" class="box"/>
+  <text x="600" y="185" text-anchor="middle" class="h">1) Partición externa estratificada 80/20</text>
+  <text x="600" y="207" text-anchor="middle" class="s">Train (80%): calibrar Stage 1 + entrenar Stage 2</text>
+  <text x="600" y="228" text-anchor="middle" class="s">Holdout (20%): evaluar sin tocar entrenamiento</text>
+
+  <path d="M600 252 L600 284" class="arrow"/>
+
+  <text x="96" y="315" class="h">2) Dentro del train de la partición i</text>
+
+  <rect x="96" y="330" width="490" height="128" class="soft"/>
+  <text x="341" y="360" text-anchor="middle" class="h">2a) Calibración Stage 1</text>
+  <text x="341" y="382" text-anchor="middle" class="s">Aprender t_lo y t_hi con restricción de error extremo</text>
+  <text x="341" y="404" text-anchor="middle" class="s">Definir zonas: Verde (bajo riesgo), Amarilla (ambigua), Roja (alto riesgo)</text>
+  <text x="341" y="426" text-anchor="middle" class="s">Salida: score P(AD) y regla de paso a Stage 2</text>
+
+  <rect x="614" y="330" width="490" height="128" class="soft"/>
+  <text x="859" y="360" text-anchor="middle" class="h">2b) Entrenamiento Stage 2</text>
+  <text x="859" y="382" text-anchor="middle" class="s">Tomar solo sujetos Amarillos del train</text>
+  <text x="859" y="404" text-anchor="middle" class="s">Entrenar bloque clínico (LogReg + ajuste de C)</text>
+  <text x="859" y="426" text-anchor="middle" class="s">Modelo condicional para resolver ambigüedad</text>
+
+  <path d="M341 458 L341 496" class="arrow"/>
+  <path d="M859 458 L859 496" class="arrow"/>
+
+  <text x="96" y="528" class="h">3) Aplicación al holdout externo de la misma partición</text>
+
+  <rect x="96" y="544" width="490" height="138" class="box"/>
+  <text x="341" y="574" text-anchor="middle" class="h">3a) Stage 1 sobre holdout</text>
+  <text x="341" y="596" text-anchor="middle" class="s">Asignar Verde/Roja por umbral directo</text>
+  <text x="341" y="618" text-anchor="middle" class="s">Casos Amarillos se derivan al segundo escalón</text>
+  <text x="341" y="640" text-anchor="middle" class="s">No hay recalibración en test</text>
+
+  <rect x="614" y="544" width="490" height="138" class="box"/>
+  <text x="859" y="574" text-anchor="middle" class="h">3b) Stage 2 sobre Amarillos</text>
+  <text x="859" y="596" text-anchor="middle" class="s">Reclasificar ambiguos con variables clínicas</text>
+  <text x="859" y="618" text-anchor="middle" class="s">Salida final binaria AD/NC para todo el holdout</text>
+  <text x="859" y="640" text-anchor="middle" class="s">Verdes y Rojos mantienen decisión directa</text>
+
+  <path d="M341 682 L341 720" class="arrow"/>
+  <path d="M859 682 L859 720" class="arrow"/>
+
+  <rect x="96" y="736" width="1008" height="118" class="box"/>
+  <text x="600" y="766" text-anchor="middle" class="h">4) Registro de métricas en holdout i</text>
+  <text x="600" y="789" text-anchor="middle" class="s">BA, sensibilidad, especificidad, FN, FP, errores totales</text>
+  <text x="600" y="811" text-anchor="middle" class="s">Guardar vector i: [BA_i, Sens_i, Spec_i, FN_i, FP_i]</text>
+  <text x="600" y="833" text-anchor="middle" class="s">Comparación siempre en datos no vistos en ese ciclo</text>
+
+  <path d="M600 854 L600 894" class="dash-arrow"/>
+  <text x="618" y="915" class="s">i = i + 1</text>
+
+  <rect x="96" y="948" width="1008" height="150" class="box"/>
+  <text x="600" y="980" text-anchor="middle" class="h">5) Agregación final de las 100 particiones</text>
+  <text x="600" y="1005" text-anchor="middle" class="s">BA final = 0,910 ± 0,051</text>
+  <text x="600" y="1028" text-anchor="middle" class="s">Sensibilidad final = 0,943 ± 0,056 | Especificidad final = 0,877 ± 0,095</text>
+  <text x="600" y="1051" text-anchor="middle" class="s">Errores medios = 2,5 ± 1,4 por holdout (~30 sujetos)</text>
+  <text x="600" y="1074" text-anchor="middle" class="s">Conclusión: mejora robusta del sistema completo frente a Stage 1 solo (mismo esquema pareado)</text>
+
+</svg>

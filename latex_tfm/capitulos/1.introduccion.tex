@@ -1,0 +1,50 @@
+\chapter{Introducción}\label{chap:introduccion}
+
+\section{Motivación}
+
+El diagnóstico biológico de la enfermedad de Alzheimer actualmente es clínico y se apoya hoy en biomarcadores sólidos, en especial en los perfiles de amiloide y tau obtenidos en líquido cefalorraquídeo o mediante PET \parencite{jack2018nia}. El reto no es la falta de herramientas, sino su uso como primer filtro, ya que, la punción lumbar es invasiva, la neuroimagen tiene un coste elevado y ambas técnicas presentan una disponibilidad limitada a su vez siendo las más recurridas. Como consecuencia, en la práctica clínica no todos los pacientes con sospecha de deterioro cognitivo pueden estudiarse con la misma intensidad desde el inicio.
+
+En ese contexto, la metabolómica plasmática ofrece una alternativa atractiva: el análisis de sangre es accesible, repetible y potencialmente escalable. Si el perfil metabólico periférico contiene señal suficiente, puede emplearse como primera capa de decisión para priorizar pacientes, descartar casos con un margen razonable de seguridad y reservar pruebas invasivas para quienes realmente las necesitan.
+
+En estudios clínicos con tamaño muestral limitado, el principal riesgo no es la falta de algoritmos, sino la flexibilidad metodológica excesiva: selección de variables inestable, optimismo en validación interna, sobreinterpretación de métricas aisladas y traducción precipitada de probabilidades a decisiones clínicas. Por ello, este problema no se resuelve simplemente entrenando un clasificador sobre una matriz de metabolitos, sino que
+
+desde esta perspectiva, el trabajo no se plantea como una búsqueda del ``mejor'' modelo en términos puramente cuantitativos, sino como un análisis completo del problema, de sus restricciones y de su reformulación más útil en clave clínica.
+
+\section{Planteamiento del problema y contribución del TFM}
+
+El trabajo parte de una formulación clásica de clasificación binaria bajo la premisa de una pregunta inicial directa: si, a partir de un bloque reducido de metabolitos residuales, un modelo supervisado puede discriminar entre AD y NC con una solidez suficiente como para tener interés clínico.
+
+Este punto de partida se apoya en el artículo ``Machine Learning Approach to Select Small Compounds in Plasma as Predictors of Alzheimer’s Disease'' \parencite{bernal2025metabolomics}, donde se muestra que una selección de metabolitos plasmáticos residualizados respecto a un metabolito concomitante de su misma familia biológica puede retener señal predictiva de EA.
+
+Tomando como referencia el dataset residualizado de 20 metabolitos empleado por Bernal et al., para cada paciente se dispone de un vector de entrada $\mathbf{x} \in \mathbb{R}^p$ con información metabolómica residualizada y una etiqueta diagnóstica $y \in \{0,1\}$ que distingue entre control cognitivamente normal (NC) y enfermedad de Alzheimer (AD). En esta formulación inicial, el objetivo es estimar $P(y=1\mid\mathbf{x})$ con capacidad de generalización suficiente para apoyar un triaje preliminar, no para sustituir a las técnicas confirmatorias.
+
+Esa formulación es necesaria, pero no suficiente para tenerla en cuenta de manera directa en un entorno clínico, sin embargo, a medida que avanza el análisis aparecen tres hechos que modifican la naturaleza del problema. Primero, la señal existe, pero con solapamiento relevante entre clases y un margen inevitable de ambigüedad. Segundo, los falsos negativos tienen un coste clínico mayor que los falsos positivos: no detectar a un paciente con AD es más grave que derivar a evaluación adicional a un control sano. Tercero, las probabilidades del modelo no deben leerse solo como salida predictiva, sino como una medida de confianza útil para la toma de decisiones clínicas.
+
+En ese marco, la contribución central del trabajo consiste en recorrer ese cambio de planteamiento de forma explícita y defendible. El estudio comienza con la construcción de un clasificador metabolómico estable y concluye que \textbf{la aportación no es maximizar BA, sino demostrar que la incertidumbre debe modelarse explícitamente} para manejarla y poder tomar decisiones clínicas informadas.
+
+En resumen, el mayor valor metodológico no está en la clasificación binaria aislada, sino en la \textbf{reformulación del problema como un sistema de triaje clínico en dos etapas, con activación condicional del segundo escalón y gestión explícita de la incertidumbre}.
+
+Desde esa perspectiva, los objetivos del trabajo son los siguientes:
+
+\begin{enumerate}
+    \item \textbf{Caracterizar rigurosamente el dataset} y determinar qué restricciones impone al modelado: solapamiento entre clases, dependencia entre variables, presencia de extremos y limitaciones de tamaño muestral.
+    \item \textbf{Construir un modelo base robusto} mediante selección de variables estable, ingeniería de variables y comparación de distintos modelos de aprendizaje automático, respaldados por criterios estadísticos y clínicos.
+    \item \textbf{Evaluar críticamente las limitaciones del clasificador binario}, con especial atención a los falsos negativos y a la ambigüedad biológica de ciertos pacientes.
+    \item \textbf{Reformular el problema como triaje}, introduciendo umbrales de confianza y una arquitectura de dos etapas que combine información metabolómica y clínica.
+    \item \textbf{Validar el sistema completo de forma robusta}, comparándolo con formulaciones alternativas y verificando qué mejora realmente, qué sacrifica y por qué la solución final no responde a una elección oportunista.
+    \item \textbf{Explorar la aplicabilidad potencial de la solución completa}, como herramienta de priorización diagnóstica previa, delimitando con claridad su alcance frente a los métodos confirmatorios de referencia.
+\end{enumerate}
+
+\section{Estructura del documento}
+
+La organización del documento sigue la lógica del propio proceso de investigación. Cada capítulo responde a una pregunta concreta y abre el paso al siguiente.
+
+\begin{itemize}
+    \item El \textbf{Capítulo~\ref{chap:estado_arte}} sitúa el trabajo en el contexto clínico y metodológico adecuado: biomarcadores de Alzheimer, metabolómica plasmática, aprendizaje automático en muestras pequeñas y sistemas de apoyo a la decisión clínica.
+
+    \item El \textbf{Capítulo~\ref{chap:materiales}} desarrolla el recorrido metodológico completo: datos, análisis exploratorio, selección de variables, construcción del modelo base, análisis de sus límites, reformulación como triaje y diseño formal del sistema.
+
+    \item El \textbf{Capítulo~\ref{chap:resultados}} presenta los hallazgos siguiendo la misma progresión narrativa que estructura el Capítulo 3: qué mostró el EDA, qué rendimiento alcanzó el clasificador base, qué límites reveló el análisis de errores, qué aporta el sistema de dos etapas y cuán robusta es la solución final.
+
+    \item El \textbf{Capítulo~\ref{chap:conclusiones}} sintetiza la aportación del trabajo, discute sus limitaciones y plantea las líneas de continuidad más relevantes.
+\end{itemize}

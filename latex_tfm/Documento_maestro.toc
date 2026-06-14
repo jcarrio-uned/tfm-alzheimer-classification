@@ -1,0 +1,99 @@
+\babel@toc {spanish}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{\numberline {1}Introducción}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivación}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Planteamiento del problema y contribución del TFM}{1}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Estructura del documento}{3}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Estado del Arte}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}La enfermedad de Alzheimer}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}El diagnóstico actual y sus limitaciones}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Biomarcadores plasmáticos: el estado actual}{6}{section.2.3}%
+\contentsline {section}{\numberline {2.4}La metabolómica como ventana complementaria}{6}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Aprendizaje automático en el contexto clínico}{7}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}El problema de la dimensionalidad en muestras pequeñas}{7}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Selección de variables: el riesgo de inestabilidad}{7}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Regularización y parsimonia}{8}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}Validación y data leakage}{8}{subsection.2.5.4}%
+\contentsline {section}{\numberline {2.6}Sistemas de apoyo a la decisión clínica}{8}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Posicionamiento de este trabajo}{8}{section.2.7}%
+\contentsline {chapter}{\numberline {3}Materiales y métodos}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Contexto y punto de partida}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Datos}{13}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Cohorte TARCC}{13}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Plataforma analítica}{14}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Construcción de la matriz analítica}{14}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Variables del análisis}{15}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Variables clínicas complementarias}{16}{subsection.3.2.5}%
+\contentsline {section}{\numberline {3.3}Análisis exploratorio de datos}{17}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Panorámica inicial de la matriz analítica}{17}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Forma de las distribuciones y plausibilidad de un modelo lineal}{17}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Escala y dispersión de las variables}{18}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Valores extremos y decisión de winsorizar}{18}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Dependencia entre metabolitos y riesgo de multicolinealidad}{19}{subsection.3.3.5}%
+\contentsline {subsection}{\numberline {3.3.6}Señal univariante entre AD y NC}{19}{subsection.3.3.6}%
+\contentsline {subsection}{\numberline {3.3.7}Tamaño muestral y riesgo de sobreajuste}{20}{subsection.3.3.7}%
+\contentsline {subsection}{\numberline {3.3.8}Desbalance de clases y elección de la métrica}{20}{subsection.3.3.8}%
+\contentsline {subsection}{\numberline {3.3.9}Síntesis operativa del EDA}{21}{subsection.3.3.9}%
+\contentsline {section}{\numberline {3.4}Hipótesis de trabajo}{21}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Pipeline de análisis}{21}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Prevención de data leakage}{22}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Esquema de validación para desarrollo}{22}{subsection.3.5.2}%
+\contentsline {section}{\numberline {3.6}Selección del tipo de modelo}{23}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Familia lineal: regresión logística y SVM lineal}{23}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Familia basada en vecindad: KNN}{23}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Familias no lineales de alta capacidad}{24}{subsection.3.6.3}%
+\contentsline {subsection}{\numberline {3.6.4}Síntesis de la comparación y elección del clasificador}{24}{subsection.3.6.4}%
+\contentsline {section}{\numberline {3.7}Selección de variables}{24}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Lógica de la selección: robustez primero, recuperación después}{24}{subsection.3.7.1}%
+\contentsline {subsection}{\numberline {3.7.2}Stability selection como cribado robusto}{25}{subsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.7.3}Forward selection para recuperar señal complementaria}{25}{subsection.3.7.3}%
+\contentsline {subsection}{\numberline {3.7.4}Lectura conjunta de ambas fases}{26}{subsection.3.7.4}%
+\contentsline {section}{\numberline {3.8}Ingeniería de features}{26}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Criterio dual de selección}{26}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Features construidas}{27}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}Incorporación progresiva y validación}{27}{subsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.8.4}Reselección y depuración tras la ingeniería}{28}{subsection.3.8.4}%
+\contentsline {subsection}{\numberline {3.8.5}¿Por qué las features no sustituyen a las bases?}{28}{subsection.3.8.5}%
+\contentsline {section}{\numberline {3.9}Especificación del clasificador binario}{28}{section.3.9}%
+\contentsline {subsection}{\numberline {3.9.1}Forma funcional del clasificador binario}{29}{subsection.3.9.1}%
+\contentsline {subsection}{\numberline {3.9.2}Ajuste de la regularización}{29}{subsection.3.9.2}%
+\contentsline {section}{\numberline {3.10}Validación del clasificador binario}{30}{section.3.10}%
+\contentsline {subsection}{\numberline {3.10.1}LOO-CV como validación primaria}{30}{subsection.3.10.1}%
+\contentsline {subsection}{\numberline {3.10.2}Consistencia entre esquemas de remuestreo}{30}{subsection.3.10.2}%
+\contentsline {subsection}{\numberline {3.10.3}Control del optimismo y estabilidad paramétrica}{31}{subsection.3.10.3}%
+\contentsline {subsection}{\numberline {3.10.4}Calibración de probabilidades}{31}{subsection.3.10.4}%
+\contentsline {subsection}{\numberline {3.10.5}Robustez clínica y suficiencia muestral}{32}{subsection.3.10.5}%
+\contentsline {section}{\numberline {3.11}Diseño del sistema de dos etapas con activación condicional}{32}{section.3.11}%
+\contentsline {subsection}{\numberline {3.11.1}Motivación y cambio de formulación}{32}{subsection.3.11.1}%
+\contentsline {subsection}{\numberline {3.11.2}Stage 1: aprendizaje de umbrales de confianza}{33}{subsection.3.11.2}%
+\contentsline {subsection}{\numberline {3.11.3}EDA mínimo del bloque clínico candidato}{34}{subsection.3.11.3}%
+\contentsline {subsection}{\numberline {3.11.4}Construcción y codificación de la entrada clínica}{34}{subsection.3.11.4}%
+\contentsline {subsection}{\numberline {3.11.5}Especificación metodológica del Stage 2}{34}{subsection.3.11.5}%
+\contentsline {subsection}{\numberline {3.11.6}Protocolo de evaluación del sistema completo}{35}{subsection.3.11.6}%
+\contentsline {subsection}{\numberline {3.11.7}Alternativas exploradas y criterio de descarte}{36}{subsection.3.11.7}%
+\contentsline {section}{\numberline {3.12}Entorno computacional}{36}{section.3.12}%
+\contentsline {subsection}{\numberline {3.12.1}Aplicación interactiva en Streamlit}{37}{subsection.3.12.1}%
+\contentsline {chapter}{\numberline {4}Resultados}{39}{chapter.4}%
+\contentsline {section}{\numberline {4.1}EDA: señal real, pero distribuida y con solapamiento}{39}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Comparación inicial entre familias de modelos}{41}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Selección de variables y construcción del modelo binario base}{43}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Rendimiento del clasificador binario base}{45}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Análisis de errores y límites de la formulación binaria}{49}{section.4.5}%
+\contentsline {section}{\numberline {4.6}De clasificación a triaje: un sistema de dos etapas con activación condicional}{51}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Sensibilidad a la tolerancia de errores extremos}{52}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Variables clínicas del Stage 2}{54}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Ajuste del segundo escalón}{55}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}Comparación con un modelo monolítico de información total}{56}{subsection.4.6.4}%
+\contentsline {section}{\numberline {4.7}Rendimiento del sistema final y utilidad clínica}{57}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Robustez y alternativas descartadas}{59}{section.4.8}%
+\contentsline {section}{\numberline {4.9}Proyección clínica simplificada del rendimiento global}{60}{section.4.9}%
+\contentsline {section}{\numberline {4.10}Interpretabilidad clínica y biológica}{62}{section.4.10}%
+\contentsline {chapter}{\numberline {5}Conclusiones y trabajos futuros}{65}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Conclusiones}{65}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Limitaciones}{67}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Líneas de trabajo futuro}{67}{section.5.3}%
+\contentsline {chapter}{Bibliografía y referencias}{71}{chapter*.53}%
+\contentsline {chapter}{\numberline {A}Panel de metabolitos seleccionados}{73}{chapter.A}%
+\contentsline {section}{\numberline {A.1}Metabolitos base}{73}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Features ingenierizadas}{73}{section.A.2}%

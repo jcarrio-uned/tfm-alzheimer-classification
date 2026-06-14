@@ -1,0 +1,162 @@
+\documentclass[12pt,a4paper]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+
+% \usepackage{hyphenat}
+% \hyphenation{apren-di-zaje pro-fun-do}
+
+\usepackage[left=2.5cm,right=2cm,top=2cm,bottom=1.7cm,includefoot,includehead,headheight=16pt]{geometry}
+
+% \usepackage{lipsum}  % Not needed - real content
+
+% Bibliografía (formato numérico)
+\usepackage[style=numeric,sorting=none,backend=biber]{biblatex}
+\usepackage{csquotes}
+\addbibresource{bibliografia.bib}
+
+% Control sobre los márgenes
+\setlength{\topmargin}{-1cm}
+\setlength{\textheight}{24cm}
+\setlength{\linewidth}{3cm}
+
+% Estilo
+\usepackage{amsmath,amssymb,amsfonts}
+% \numberwithin{equation}{section}
+\usepackage{float}
+\usepackage{graphicx,xcolor}
+\usepackage{caption}
+\usepackage[section]{placeins}
+% Colores de las paletas de identidad corporativa de la UNED
+\definecolor{UNED}{RGB}{0, 83, 62}
+\definecolor{UNED_medium}{RGB}{66, 117, 98}
+\definecolor{Apple}{RGB}{116, 159, 76}
+\definecolor{Apple_medium}{RGB}{138, 172, 93}
+\definecolor{Blue}{RGB}{92, 110, 177}
+\definecolor{Blue_medium}{RGB}{118, 131, 189}
+\definecolor{Tangerine}{RGB}{215, 111, 71}
+\definecolor{Tangerine_medium}{RGB}{221, 137, 100}
+\definecolor{Strawberry}{RGB}{218, 82, 104}
+\definecolor{Strawberry_medium}{RGB}{200, 115, 132}
+\definecolor{Raspberry}{RGB}{144, 33, 74}
+\definecolor{Raspberry_medium}{RGB}{142, 77, 96}
+
+\usepackage{setspace}
+\renewcommand{\baselinestretch}{1.2}
+
+% Tablas
+\usepackage{tabularx,multirow,rotating,longtable}
+
+% Código
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Código}
+\usepackage[mathscr]{euscript}
+\lstdefinestyle{estiloMUICD}{
+    backgroundcolor=\color{black!5!white},
+    commentstyle=\color{green!60!black},
+    keywordstyle=\color{blue},
+    numberstyle=\footnotesize,
+    stringstyle=\color{black!40!white}\ttfamily,
+    basicstyle=\small\ttfamily,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=estiloMUICD}
+
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+% Encabezados
+\usepackage{fancyhdr}
+\fancyhf{}
+\fancyhead{}
+\pagestyle{fancy}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO, RE]{\leftmark}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+\pagestyle{empty}
+
+% Hyperlinks
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% Make hyperref anchors explicit for numbered floats and equations.
+\makeatletter
+\providecommand*{\theHchapter}{\arabic{chapter}}
+\renewcommand*{\theHsection}{\theHchapter.\arabic{section}}
+\renewcommand*{\theHfigure}{\theHchapter.\arabic{figure}}
+\renewcommand*{\theHtable}{\theHchapter.\arabic{table}}
+\renewcommand*{\theHequation}{\theHchapter.\arabic{equation}}
+\makeatother
+
+% Glosarios y nomenclaturas
+\usepackage[toc,nonumberlist]{glossaries}
+\input{otros/glosario}
+
+
+\begin{document}
+% \glsaddall
+\frontmatter
+\include{otros/portada}
+\cleardoublepage{}
+
+\include{otros/agradecimientos}
+
+\cleardoublepage{}
+\include{otros/resumen}
+
+\cleardoublepage{}
+\include{otros/abstract}
+
+%\newpage
+\printglossary
+
+
+\tableofcontents
+\listoffigures
+\renewcommand{\listtablename}{Índice de tablas}
+\listoftables
+
+
+%\newpage
+\mainmatter
+\pagestyle{fancy}
+
+\include{capitulos/1.introduccion}
+\include{capitulos/2.estado_del_arte}
+\include{capitulos/3.materiales_y_metodos}
+\include{capitulos/4.resultados}
+\include{capitulos/5.conclusiones}
+
+
+\newpage
+
+
+% \bibliography{bibliografia}
+\printbibliography
+\addcontentsline{toc}{chapter}{Bibliografía y referencias} %Para
+% \nocite{*}
+\glsaddall
+
+
+% Apéndices
+\appendix
+\include{apendice_ejemplo}
+
+\end{document}

@@ -1,0 +1,23 @@
+\babel@toc {spanish}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {spanish}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Pipeline completo del sistema propuesto. Se muestran las fases de preparación y selección metabolómica, la transición desde clasificación binaria a triaje clínico en dos etapas y el esquema final de validación externa.}}{13}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Vistas de la aplicación para selección de variables y configuración de modelos. A la izquierda se observa el pipeline de selección y el selector manual con métricas asociadas; a la derecha, la parametrización explícita del clasificador y su regularización.}}{38}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Vistas de la aplicación para evaluación y predicción individual. A la izquierda se muestra la configuración del protocolo de validación; a la derecha, la interfaz de inferencia por paciente con entrada metabolómica y control del umbral de incertidumbre.}}{38}{figure.caption.16}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Metabolitos con mayor tamaño de efecto absoluto en la comparación AD frente a NC.}}{40}{figure.caption.18}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Proyección PCA sobre los dos primeros componentes principales.}}{41}{figure.caption.19}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Comparación entre candidatos de panel y panel S1 consolidado.}}{44}{figure.caption.24}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Esquema de validación externa en 100 particiones para el sistema de dos etapas. Cada partición reaprende Stage 1 y Stage 2 dentro de su training fold y evalúa el rendimiento final sobre su holdout externo.}}{47}{figure.caption.28}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Curva ROC y distribución de probabilidades del modelo base bajo LOO-CV.}}{48}{figure.caption.29}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Distribución de probabilidades por tipo de resultado y persistencia del error por sujeto.}}{49}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Selección de umbrales del Stage 1 bajo restricciones de error extremo nulo. La figura ilustra la lógica de búsqueda dentro del training set antes de aplicar el sistema de dos etapas al holdout externo.}}{51}{figure.caption.34}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Distribución de la BA del sistema de dos etapas y mejora aportada por el Stage 2 sobre el baseline pareado, siempre sobre las mismas 100 particiones externas.}}{58}{figure.caption.45}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Curva de aprendizaje del sistema final.}}{59}{figure.caption.47}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Sensibilidad a prevalencia del sistema final: evolución de PPV y NPV en función de la prevalencia de AD, calculada a partir de la sensibilidad y especificidad globales medias del sistema final.}}{61}{figure.caption.49}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Lectura fisiopatológica integrada del panel metabolómico final.}}{63}{figure.caption.51}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }

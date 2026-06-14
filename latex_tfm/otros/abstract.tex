@@ -1,0 +1,18 @@
+\selectlanguage{english}%
+\noindent \begin{center}
+\section*{Abstract}
+\par\end{center}
+
+This thesis addresses the challenge of discriminating Alzheimer’s disease (AD) from cognitively normal controls (NC) using plasma metabolomics in a small-sample clinical setting. Rather than focusing only on maximising classifier performance, the study examines the intrinsic limits of metabolomic prediction and evaluates whether an alternative formulation better matches real clinical decision-making.
+
+A cohort of 148 subjects from the TARCC consortium (89 AD, 59 NC) was analysed using a parsimonious pipeline based on regularised logistic regression, stability-driven feature selection, and biologically motivated feature engineering. Although the resulting model achieves competitive discrimination, detailed error analysis identifies a subgroup of patients with overlapping metabolomic profiles, creating persistent ambiguity that cannot be resolved by adding model complexity alone.
+
+Motivated by this finding, the problem is reformulated as a two-stage clinical triage system. In this framework, the metabolomic model identifies high-confidence regions and an explicit uncertainty zone, while a second-stage model incorporates clinical variables to resolve ambiguous cases. This approach consistently improves paired external test performance, increasing test Balanced Accuracy from 0.850 (Stage 1 only) to 0.910 (two-stage system) and yielding a clear gain in sensitivity.
+
+The main contribution is to demonstrate that the goal is not to maximize BA, but to show that uncertainty must be modelled explicitly. The challenge is not only algorithmic but also structural: a flat binary classification framework is insufficient to capture the problem's inherent ambiguity in clinical practice. By modelling this uncertainty explicitly through a triage-oriented architecture, the proposed approach offers a more faithful representation of real clinical decision-making and improves practical utility.
+
+\vspace{0.5cm}
+\begin{flushleft}
+\textbf{Keywords}: Alzheimer's disease, plasma metabolomics, biomarkers, machine learning, logistic regression, clinical triage, feature selection, robust validation
+\end{flushleft}
+\selectlanguage{spanish}%

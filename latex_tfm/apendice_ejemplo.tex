@@ -1,0 +1,42 @@
+\chapter{Panel de metabolitos seleccionados}\label{app:metabolitos}
+
+En este apéndice se detalla el panel final de 11 variables (7 metabolitos base + 4 features ingenierizadas) utilizado en el modelo de clasificación.
+
+\section{Metabolitos base}
+
+\begin{table}[h]
+\centering
+\caption{Metabolitos base seleccionados por \textit{stability selection} y \textit{forward selection}.}
+\label{tab:metabolitos_base}
+\begin{tabular}{lll}
+\hline
+\textbf{Metabolito} & \textbf{Clase} & \textbf{Eje biológico} \\
+\hline
+DOPA & Amina biogénica & Neurotransmisión dopaminérgica \\
+Cer(d18:1/20:0) & Ceramida & Apoptosis / esfingolípidos \\
+lysoPC a C18:2 & Lisofosfatidilcolina & Integridad de membrana \\
+PC aa C40:4 & Fosfatidilcolina & Integridad de membrana \\
+DHEAS & Esteroide & Neuroprotección \\
+Arg & Aminoácido & Función vascular (NO) \\
+HexCer(d18:1/26:1) & Hexosilceramida & Apoptosis / esfingolípidos \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Features ingenierizadas}
+
+\begin{table}[h]
+\centering
+\caption{Features ingenierizadas a partir de los metabolitos base.}
+\label{tab:ratios}
+\begin{tabular}{ll}
+\hline
+\textbf{Feature} & \textbf{Interpretación biológica} \\
+\hline
+DHEAS / lysoPC a C18:2 & Neuroprotección vs. daño membrana \\
+DOPA $\times$ DHEAS & Interacción neurotransmisión-esteroides \\
+PC aa C40:4 $\times$ DOPA & Membrana $\times$ dopamina \\
+DHEAS / Cer(d18:1/20:0) & Protección vs. apoptosis \\
+\hline
+\end{tabular}
+\end{table}
